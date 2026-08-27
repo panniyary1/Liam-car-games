@@ -210,11 +210,11 @@ function drawScenery(){
 }
 
 function spawnTraffic(){
-  if(frame%85===0){
+  if(frame%115===0){
     traffic.push({
       offset:(Math.random()-.5)*.34,
       y:-80,
-      speed:4.2+Math.random()*1.8,
+      speed:2.5+Math.random()*0.9,
       icon:trafficCars[Math.floor(Math.random()*trafficCars.length)]
     });
   }
@@ -229,12 +229,43 @@ function spawnCoin(){
   }
 }
 
+
+function drawTopCar(x,y,kind){
+  const colors={
+    '🚗':'#ef4444','🚙':'#2563eb','🚕':'#ffd43b','🚓':'#f8fafc',
+    '🛻':'#22c55e','🚐':'#a855f7','🚑':'#ffffff'
+  };
+  const c=colors[kind]||'#ff4d6d';
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.fillStyle='#111827';
+  ctx.fillRect(-24,-34,8,18); ctx.fillRect(16,-34,8,18);
+  ctx.fillRect(-24,16,8,18); ctx.fillRect(16,16,8,18);
+  ctx.fillStyle=c;
+  ctx.beginPath();
+  ctx.roundRect(-20,-42,40,84,11);
+  ctx.fill();
+  ctx.fillStyle='#9ee7ff';
+  ctx.fillRect(-13,-25,26,18);
+  ctx.fillRect(-13,10,26,15);
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(-14,-39,9,5); ctx.fillRect(5,-39,9,5);
+  if(kind==='🚓'){
+    ctx.fillStyle='#ef4444'; ctx.fillRect(-12,-4,11,6);
+    ctx.fillStyle='#2563eb'; ctx.fillRect(1,-4,11,6);
+  }
+  if(kind==='🚑'){
+    ctx.fillStyle='#ef4444';
+    ctx.fillRect(-3,-9,6,18); ctx.fillRect(-9,-3,18,6);
+  }
+  ctx.restore();
+}
+
 function updateTraffic(){
   for(let i=traffic.length-1;i>=0;i--){
     const t=traffic[i]; t.y+=t.speed;
     const x=W/2+t.offset*roadWidth(t.y);
-    ctx.font='50px Arial'; ctx.textAlign='center';
-    ctx.fillText(t.icon,x,t.y);
+    drawTopCar(x,t.y,t.icon);
     if(t.y>H+80){
       traffic.splice(i,1);
       passed++;
@@ -321,11 +352,16 @@ function playCheer(){
 function startMusic(){
   stopMusic();
   if(!soundOn) return;
-  const notes=[330,392,440,523,440,392];
+  const notes=[523,659,784,659,698,880,784,659,587,698,784,1047];
+  const beats=[.10,.10,.14,.10,.10,.14,.10,.10,.10,.10,.14,.18];
   let i=0;
   musicTimer=setInterval(()=>{
-    if(playing&&soundOn) beep(notes[i++%notes.length],.14,.012);
-  },650);
+    if(playing&&soundOn){
+      beep(notes[i%notes.length],beats[i%beats.length],.018);
+      if(i%4===0) setTimeout(()=>beep(notes[i%notes.length]/2,.08,.007),55);
+      i++;
+    }
+  },330);
 }
 function stopMusic(){
   if(musicTimer){ clearInterval(musicTimer); musicTimer=null; }
