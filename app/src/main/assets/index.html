@@ -1,118 +1,389 @@
-.setValueAtTime(volume,audioCtx.currentTime);
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Liam Car Games</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#72cfff;touch-action:none}
+button{font-family:inherit;font-weight:900}
+.screen{position:fixed;inset:0;display:none}
+.screen.show{display:block}
+#home{background:linear-gradient(#74d2ff 0 55%,#67bf4e 55%);text-align:center;color:#fff}
+.logo{margin-top:5vh;font-size:clamp(30px,7vw,58px);font-weight:900;text-shadow:0 4px 0 #18579d,0 7px 12px #0004}
+.sub{font-size:18px;margin:8px 0 16px;text-shadow:0 2px 4px #0005}
+#driverIcon{font-size:64px;margin:8px}
+.big{display:block;width:min(320px,78vw);margin:12px auto;padding:15px;border:0;border-radius:22px;font-size:23px;box-shadow:0 7px 0 #0003}
+.play{background:#ffd43b;color:#3c2a00}
+.garageBtn{background:#29adf1;color:#fff}
+.driverBtn{background:#ff7e9f;color:#fff}
+#garage,#driver{background:linear-gradient(#e4f7ff,#8dd5ff);padding:16px;text-align:center;overflow:auto}
+.panel{background:#fff;border-radius:24px;padding:18px;max-width:760px;margin:12px auto;box-shadow:0 8px 24px #0002}
+.back{position:fixed;top:12px;left:12px;border:0;border-radius:14px;padding:10px 14px;font-size:21px;z-index:30}
+.carChoice{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:104px;height:104px;margin:7px;border:5px solid transparent;border-radius:22px;background:#edf8ff;font-size:43px;box-shadow:0 4px 10px #0002}
+.carChoice.sel{border-color:#ffd43b;transform:translateY(-3px)}
+.carChoice span{font-size:12px;color:#234}
+.driverChoice{display:inline-flex;align-items:center;justify-content:center;width:88px;height:88px;margin:7px;border:5px solid transparent;border-radius:22px;background:#eef7ff;font-size:49px}
+.driverChoice.sel{border-color:#ffd43b}
+#game{background:#63ba4d}
+canvas{width:100%;height:100%;display:block}
+#hud{position:fixed;top:10px;left:12px;color:#fff;font-size:18px;font-weight:900;text-shadow:0 2px 4px #000;z-index:10}
+#homeBtn,#soundBtn{position:fixed;right:12px;border:0;border-radius:12px;padding:9px 12px;z-index:11}
+#homeBtn{top:10px}
+#soundBtn{top:52px;font-size:18px}
+.ctrl{position:fixed;bottom:22px;width:78px;height:78px;border-radius:50%;border:4px solid #fff;background:#176fd0cc;color:#fff;font-size:35px;z-index:12}
+#left{left:22px} #right{right:22px}
+#cheer{position:fixed;left:50%;top:20%;transform:translate(-50%,-50%);width:min(240px,52vw);padding:7px 10px;border:3px solid #fff;border-radius:14px;background:linear-gradient(135deg,#fff7a8,#ffd43b,#ffb44b);color:#6a4300;text-align:center;font-weight:900;font-size:clamp(14px,3vw,20px);box-shadow:0 6px 15px #0004;z-index:40;display:none}
+#cheer small{display:block;font-size:11px;margin-top:2px}
+</style>
+</head>
+<body>
 
-gain.gain.exponentialRampToValueAtTime(
-0.001,
-audioCtx.currentTime+time
-);
+<section id="home" class="screen show">
+  <div class="logo">🏁 LIAM CAR GAMES 🏁</div>
+  <div class="sub">Drive • Collect • Have Fun!</div>
+  <div id="driverIcon">🧒</div>
+  <button class="big play" id="playHome">▶ PLAY</button>
+  <button class="big garageBtn" id="garageHome">🚗 MY GARAGE</button>
+  <button class="big driverBtn" id="driverHome">🙂 MY DRIVER</button>
+</section>
 
-osc.connect(gain);
-gain.connect(audioCtx.destination);
+<section id="garage" class="screen">
+  <button class="back" data-back>←</button>
+  <div class="panel">
+    <h2>Choose Your Car</h2>
+    <div class="carChoice sel" data-car="🏎️">🏎️<span>SPORT</span></div>
+    <div class="carChoice" data-car="🚙">🚙<span>SUV</span></div>
+    <div class="carChoice" data-car="🛻">🛻<span>TRUCK</span></div>
+    <div class="carChoice" data-car="🚓">🚓<span>POLICE</span></div>
+    <div class="carChoice" data-car="🚕">🚕<span>TAXI</span></div>
+    <div class="carChoice" data-car="🚒">🚒<span>FIRE</span></div>
+    <div class="carChoice" data-car="🚑">🚑<span>AMBULANCE</span></div>
+    <div class="carChoice" data-car="🚐">🚐<span>VAN</span></div>
+    <div class="carChoice" data-car="🚘">🚘<span>CAR</span></div>
+    <div class="carChoice" data-car="🏁">🏁<span>RACER</span></div>
+    <button class="big play" id="playGarage">▶ PLAY</button>
+  </div>
+</section>
 
-osc.start();
-osc.stop(audioCtx.currentTime+time);
+<section id="driver" class="screen">
+  <button class="back" data-back>←</button>
+  <div class="panel">
+    <h2>Choose Your Driver</h2>
+    <div class="driverChoice sel" data-driver="🧒">🧒</div>
+    <div class="driverChoice" data-driver="👦">👦</div>
+    <div class="driverChoice" data-driver="👧">👧</div>
+    <div class="driverChoice" data-driver="🧑">🧑</div>
+    <button class="big play" data-back>✓ DONE</button>
+  </div>
+</section>
+
+<section id="game" class="screen">
+  <canvas id="gameCanvas"></canvas>
+  <div id="hud">🪙 <span id="coins">0</span> &nbsp; 🚗 <span id="passed">0</span></div>
+  <button id="homeBtn">HOME</button>
+  <button id="soundBtn">🔊</button>
+  <button id="left" class="ctrl">◀</button>
+  <button id="right" class="ctrl">▶</button>
+</section>
+
+<div id="cheer">🎊 GREAT JOB! 🎊<small>Keep going!</small></div>
+
+<script>
+(function(){
+'use strict';
+
+const $ = id => document.getElementById(id);
+const screens = document.querySelectorAll('.screen');
+const canvas = $('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let W=0,H=0,playing=false,frame=0;
+let selectedCar='🏎️', selectedDriver='🧒';
+let playerX=0, playerY=0, leftHeld=false, rightHeld=false;
+let coins=0, passed=0;
+let traffic=[], coinList=[];
+let soundOn=true, audioCtx=null, musicTimer=null;
+const animals=['🐄','🐎','🐑','🐕','🦌','🐖','🐐','🦙'];
+const trafficCars=['🚗','🚙','🚕','🚓','🛻','🚐','🚑'];
+
+function show(id){
+  screens.forEach(s=>s.classList.remove('show'));
+  $(id).classList.add('show');
+  playing = id==='game';
+  if(!playing) stopMusic();
 }
 
+function resize(){
+  W=canvas.width=innerWidth;
+  H=canvas.height=innerHeight;
+  playerY=H-120;
+  if(!playerX) playerX=W/2;
+}
+addEventListener('resize',resize);
+resize();
+
+function roadWidth(y){
+  const top=150, bottom=W*0.72;
+  return top + (bottom-top)*(y/H);
+}
+function roadLeft(y){ return W/2-roadWidth(y)/2; }
+
+function startGame(){
+  coins=0; passed=0; frame=0; traffic=[]; coinList=[];
+  $('coins').textContent='0';
+  $('passed').textContent='0';
+  playerX=W/2; playerY=H-120;
+  show('game');
+  startMusic();
+}
+
+function drawBackground(){
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,'#74d4ff');
+  sky.addColorStop(.54,'#d6f4ff');
+  sky.addColorStop(.55,'#65c052');
+  sky.addColorStop(1,'#3f9e35');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle='#fff';
+  for(let i=0;i<5;i++){
+    const x=(i*250+100-frame*.12)%(W+300)-120;
+    const y=70+(i%2)*35;
+    ctx.beginPath();
+    ctx.arc(x,y,25,0,Math.PI*2);
+    ctx.arc(x+28,y-5,32,0,Math.PI*2);
+    ctx.arc(x+58,y+2,24,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle='#3a8c32';
+  ctx.beginPath();
+  ctx.moveTo(0,H*.52);
+  ctx.lineTo(W*.15,H*.34);
+  ctx.lineTo(W*.30,H*.52);
+  ctx.lineTo(W*.46,H*.30);
+  ctx.lineTo(W*.63,H*.52);
+  ctx.lineTo(W*.79,H*.35);
+  ctx.lineTo(W,H*.52);
+  ctx.closePath(); ctx.fill();
+}
+
+function drawRoad(){
+  ctx.fillStyle='#444';
+  ctx.beginPath();
+  ctx.moveTo(W/2-75,0);
+  ctx.lineTo(W/2+75,0);
+  ctx.lineTo(W/2+W*.37,H);
+  ctx.lineTo(W/2-W*.37,H);
+  ctx.closePath(); ctx.fill();
+
+  ctx.strokeStyle='#fff'; ctx.lineWidth=6;
+  ctx.beginPath(); ctx.moveTo(W/2-75,0); ctx.lineTo(W/2-W*.37,H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W/2+75,0); ctx.lineTo(W/2+W*.37,H); ctx.stroke();
+
+  ctx.strokeStyle='#ffd43b'; ctx.lineWidth=5;
+  for(let y=(frame*10)%150-150;y<H;y+=150){
+    ctx.beginPath(); ctx.moveTo(W/2,y); ctx.lineTo(W/2,y+65); ctx.stroke();
+  }
+}
+
+function drawScenery(){
+  for(let i=0;i<10;i++){
+    const y=((frame*3.2+i*120)%(H+140))-70;
+    const left=roadLeft(y), rw=roadWidth(y), side=i%2===0?-1:1;
+    const x=side<0?left-55-(i%3)*24:left+rw+55+(i%3)*24;
+    const scale=.6+(y/H)*.7;
+    ctx.font=(42*scale)+'px Arial'; ctx.textAlign='center';
+    ctx.fillText(i%3===0?'🌴':'🌳',x,y);
+  }
+
+  for(let i=0;i<7;i++){
+    const y=((frame*2.4+i*175)%(H+170))-85;
+    const left=roadLeft(y), rw=roadWidth(y), side=i%2===0?-1:1;
+    const x=side<0?left-105:left+rw+105;
+    const scale=.55+(y/H)*.65;
+    ctx.font=(31*scale)+'px Arial'; ctx.textAlign='center';
+    ctx.fillText(animals[i%animals.length],x,y);
+  }
+}
+
+function spawnTraffic(){
+  if(frame%85===0){
+    traffic.push({
+      offset:(Math.random()-.5)*.34,
+      y:-80,
+      speed:4.2+Math.random()*1.8,
+      icon:trafficCars[Math.floor(Math.random()*trafficCars.length)]
+    });
+  }
+}
+function spawnCoin(){
+  if(frame%95===0){
+    coinList.push({
+      offset:(Math.random()-.5)*.38,
+      y:-40,
+      speed:5
+    });
+  }
+}
+
+function updateTraffic(){
+  for(let i=traffic.length-1;i>=0;i--){
+    const t=traffic[i]; t.y+=t.speed;
+    const x=W/2+t.offset*roadWidth(t.y);
+    ctx.font='50px Arial'; ctx.textAlign='center';
+    ctx.fillText(t.icon,x,t.y);
+    if(t.y>H+80){
+      traffic.splice(i,1);
+      passed++;
+      $('passed').textContent=passed;
+      if(passed%15===0) showCheer();
+    }
+  }
+}
+
+function updateCoins(){
+  for(let i=coinList.length-1;i>=0;i--){
+    const c=coinList[i]; c.y+=c.speed;
+    const x=W/2+c.offset*roadWidth(c.y);
+    ctx.font='30px Arial'; ctx.textAlign='center';
+    ctx.fillText('🪙',x,c.y);
+    if(Math.abs(x-playerX)<40 && Math.abs(c.y-playerY)<55){
+      coinList.splice(i,1);
+      coins++; $('coins').textContent=coins; coinSound(); continue;
+    }
+    if(c.y>H+50) coinList.splice(i,1);
+  }
+}
+
+function movePlayer(){
+  if(leftHeld) playerX-=7;
+  if(rightHeld) playerX+=7;
+  const left=roadLeft(playerY), rw=roadWidth(playerY);
+  playerX=Math.max(left+38,Math.min(left+rw-38,playerX));
+}
+
+function drawPlayer(){
+  ctx.textAlign='center';
+  ctx.font='62px Arial';
+  ctx.fillText(selectedCar,playerX,playerY);
+  ctx.font='24px Arial';
+  ctx.fillText(selectedDriver,playerX,playerY-48);
+}
+
+function loop(){
+  requestAnimationFrame(loop);
+  if(!playing) return;
+  frame++;
+  drawBackground();
+  drawRoad();
+  drawScenery();
+  spawnTraffic();
+  spawnCoin();
+  updateTraffic();
+  updateCoins();
+  movePlayer();
+  drawPlayer();
+}
+loop();
+
+function showCheer(){
+  const el=$('cheer');
+  el.style.display='block';
+  playCheer();
+  setTimeout(()=>el.style.display='none',1100);
+}
+
+function ensureAudio(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+}
+function beep(freq,dur,vol){
+  if(!soundOn) return;
+  ensureAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type='sine'; o.frequency.value=freq;
+  g.gain.setValueAtTime(Math.max(.0001,vol),audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+dur);
+}
 function coinSound(){
-beep(900,.08,.05);
-setTimeout(function(){
-beep(1200,.08,.04);
-},70);
+  beep(880,.08,.04);
+  setTimeout(()=>beep(1175,.08,.035),70);
 }
-
-function playCheerSound(){
-beep(520,.12,.05);
-setTimeout(function(){beep(660,.12,.05)},120);
-setTimeout(function(){beep(800,.18,.05)},240);
+function playCheer(){
+  beep(523,.12,.04);
+  setTimeout(()=>beep(659,.12,.04),120);
+  setTimeout(()=>beep(784,.18,.045),240);
 }
-
 function startMusic(){
-
-if(!soundOn)return;
-
-ensureAudio();
-
-var notes=[330,392,440,523];
-var i=0;
-
-window.musicLoop=setInterval(function(){
-
-if(!playing || !soundOn)return;
-
-beep(notes[i%notes.length],.14,.015);
-
-i++;
-
-},650);
+  stopMusic();
+  if(!soundOn) return;
+  const notes=[330,392,440,523,440,392];
+  let i=0;
+  musicTimer=setInterval(()=>{
+    if(playing&&soundOn) beep(notes[i++%notes.length],.14,.012);
+  },650);
+}
+function stopMusic(){
+  if(musicTimer){ clearInterval(musicTimer); musicTimer=null; }
 }
 
-function toggleSound(){
+$('playHome').addEventListener('click',startGame);
+$('playGarage').addEventListener('click',startGame);
+$('garageHome').addEventListener('click',()=>show('garage'));
+$('driverHome').addEventListener('click',()=>show('driver'));
+$('homeBtn').addEventListener('click',()=>show('home'));
 
-soundOn=!soundOn;
+document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click',()=>show('home')));
 
-document.getElementById("soundBtn").textContent=
-soundOn ? "🔊" : "🔇";
-
-if(!soundOn && window.musicLoop){
-clearInterval(window.musicLoop);
-window.musicLoop=null;
-}
-
-if(soundOn && playing){
-startMusic();
-}
-}
-
-function pressLeft(e){
-if(e)e.preventDefault();
-leftPressed=true;
-}
-
-function releaseLeft(e){
-if(e)e.preventDefault();
-leftPressed=false;
-}
-
-function pressRight(e){
-if(e)e.preventDefault();
-rightPressed=true;
-}
-
-function releaseRight(e){
-if(e)e.preventDefault();
-rightPressed=false;
-}
-
-var leftButton=document.getElementById("left");
-var rightButton=document.getElementById("right");
-
-leftButton.addEventListener("touchstart",pressLeft,{passive:false});
-leftButton.addEventListener("touchend",releaseLeft,{passive:false});
-leftButton.addEventListener("touchcancel",releaseLeft,{passive:false});
-leftButton.addEventListener("mousedown",pressLeft);
-leftButton.addEventListener("mouseup",releaseLeft);
-leftButton.addEventListener("mouseleave",releaseLeft);
-
-rightButton.addEventListener("touchstart",pressRight,{passive:false});
-rightButton.addEventListener("touchend",releaseRight,{passive:false});
-rightButton.addEventListener("touchcancel",releaseRight,{passive:false});
-rightButton.addEventListener("mousedown",pressRight);
-rightButton.addEventListener("mouseup",releaseRight);
-rightButton.addEventListener("mouseleave",releaseRight);
-
-document.addEventListener("keydown",function(e){
-
-if(e.key==="ArrowLeft")leftPressed=true;
-if(e.key==="ArrowRight")rightPressed=true;
-
+document.querySelectorAll('.carChoice').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.carChoice').forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel');
+    selectedCar=el.dataset.car;
+  });
 });
 
-document.addEventListener("keyup",function(e){
-
-if(e.key==="ArrowLeft")leftPressed=false;
-if(e.key==="ArrowRight")rightPressed=false;
-
+document.querySelectorAll('.driverChoice').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.driverChoice').forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel');
+    selectedDriver=el.dataset.driver;
+    $('driverIcon').textContent=selectedDriver;
+  });
 });
 
+$('soundBtn').addEventListener('click',()=>{
+  soundOn=!soundOn;
+  $('soundBtn').textContent=soundOn?'🔊':'🔇';
+  if(soundOn&&playing) startMusic(); else stopMusic();
+});
+
+function hold(btn,side){
+  const on=e=>{e.preventDefault(); if(side==='L') leftHeld=true; else rightHeld=true;};
+  const off=e=>{e.preventDefault(); if(side==='L') leftHeld=false; else rightHeld=false;};
+  btn.addEventListener('touchstart',on,{passive:false});
+  btn.addEventListener('touchend',off,{passive:false});
+  btn.addEventListener('touchcancel',off,{passive:false});
+  btn.addEventListener('mousedown',on);
+  btn.addEventListener('mouseup',off);
+  btn.addEventListener('mouseleave',off);
+}
+hold($('left'),'L'); hold($('right'),'R');
+
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft') leftHeld=true;
+  if(e.key==='ArrowRight') rightHeld=true;
+});
+addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft') leftHeld=false;
+  if(e.key==='ArrowRight') rightHeld=false;
+});
+
+})();
 </script>
 </body>
 </html>
