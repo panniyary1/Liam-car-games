@@ -296,12 +296,96 @@ function movePlayer(){
   playerX=Math.max(left+38,Math.min(left+rw-38,playerX));
 }
 
-function drawPlayer(){
+function playerColor(kind){
+  const colors={
+    '🏎️':'#ef233c',
+    '🚙':'#2563eb',
+    '🛻':'#16a34a',
+    '🚓':'#f8fafc',
+    '🚕':'#facc15',
+    '🚒':'#dc2626',
+    '🚑':'#ffffff',
+    '🚐':'#8b5cf6',
+    '🚘':'#06b6d4',
+    '🏁':'#111827'
+  };
+  return colors[kind]||'#ef233c';
+}
+
+function drawPlayerCar(x,y,kind){
+  const c=playerColor(kind);
+  ctx.save();
+  ctx.translate(x,y);
+
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,.25)';
+  ctx.beginPath();
+  ctx.ellipse(0,8,31,47,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Tires
+  ctx.fillStyle='#111';
+  ctx.fillRect(-28,-33,8,23);
+  ctx.fillRect(20,-33,8,23);
+  ctx.fillRect(-28,14,8,23);
+  ctx.fillRect(20,14,8,23);
+
+  // Main body
+  ctx.fillStyle=c;
+  ctx.beginPath();
+  ctx.roundRect(-23,-47,46,94,13);
+  ctx.fill();
+
+  // Hood stripe for sport/racer
+  if(kind==='🏎️' || kind==='🏁'){
+    ctx.fillStyle='#111827';
+    ctx.fillRect(-4,-45,8,90);
+  }
+
+  // Windshields
+  ctx.fillStyle='#9ee7ff';
+  ctx.beginPath();
+  ctx.roundRect(-15,-28,30,21,6);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(-15,10,30,19,6);
+  ctx.fill();
+
+  // Headlights
+  ctx.fillStyle='#fff7b2';
+  ctx.fillRect(-15,-43,10,6);
+  ctx.fillRect(5,-43,10,6);
+
+  // Tail lights
+  ctx.fillStyle='#ff6b6b';
+  ctx.fillRect(-15,37,9,5);
+  ctx.fillRect(6,37,9,5);
+
+  // Special markings
+  if(kind==='🚓'){
+    ctx.fillStyle='#ef4444'; ctx.fillRect(-13,-3,12,6);
+    ctx.fillStyle='#2563eb'; ctx.fillRect(1,-3,12,6);
+  }
+  if(kind==='🚑'){
+    ctx.fillStyle='#ef4444';
+    ctx.fillRect(-3,-10,6,20);
+    ctx.fillRect(-10,-3,20,6);
+  }
+  if(kind==='🚒'){
+    ctx.fillStyle='#fde047';
+    ctx.fillRect(-14,28,28,5);
+  }
+
+  ctx.restore();
+
+  // Driver badge above car, small so it doesn't block the road
+  ctx.font='22px Arial';
   ctx.textAlign='center';
-  ctx.font='62px Arial';
-  ctx.fillText(selectedCar,playerX,playerY);
-  ctx.font='24px Arial';
-  ctx.fillText(selectedDriver,playerX,playerY-48);
+  ctx.fillText(selectedDriver,x,y-61);
+}
+
+function drawPlayer(){
+  drawPlayerCar(playerX,playerY,selectedCar);
 }
 
 function loop(){
@@ -341,27 +425,35 @@ function beep(freq,dur,vol){
   o.start(); o.stop(audioCtx.currentTime+dur);
 }
 function coinSound(){
-  beep(880,.08,.04);
-  setTimeout(()=>beep(1175,.08,.035),70);
+  beep(988,.07,.035);
+  setTimeout(()=>beep(1319,.09,.03),75);
 }
 function playCheer(){
-  beep(523,.12,.04);
-  setTimeout(()=>beep(659,.12,.04),120);
-  setTimeout(()=>beep(784,.18,.045),240);
+  beep(659,.10,.035);
+  setTimeout(()=>beep(784,.10,.035),105);
+  setTimeout(()=>beep(988,.13,.04),210);
+  setTimeout(()=>beep(1175,.16,.04),330);
 }
 function startMusic(){
   stopMusic();
   if(!soundOn) return;
-  const notes=[523,659,784,659,698,880,784,659,587,698,784,1047];
-  const beats=[.10,.10,.14,.10,.10,.14,.10,.10,.10,.10,.14,.18];
+  const melody=[
+    523,659,784,659,
+    587,698,880,698,
+    659,784,988,784,
+    587,659,784,523
+  ];
   let i=0;
   musicTimer=setInterval(()=>{
     if(playing&&soundOn){
-      beep(notes[i%notes.length],beats[i%beats.length],.018);
-      if(i%4===0) setTimeout(()=>beep(notes[i%notes.length]/2,.08,.007),55);
+      const n=melody[i%melody.length];
+      beep(n,.13,.014);
+      if(i%4===0){
+        setTimeout(()=>beep(n/2,.09,.004),65);
+      }
       i++;
     }
-  },330);
+  },460);
 }
 function stopMusic(){
   if(musicTimer){ clearInterval(musicTimer); musicTimer=null; }
