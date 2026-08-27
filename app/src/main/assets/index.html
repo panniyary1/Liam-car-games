@@ -4,16 +4,75 @@ function size(){W=c.width=innerWidth;H=c.height=innerHeight;car.y=H-130;if(!play
 function road(){var rw=Math.min(W*.72,560);return{x:(W-rw)/2,w:rw}}
 function dc(x,y,col){
 g.save();g.translate(x,y);
-g.fillStyle="#111";g.fillRect(-5,14,7,18);g.fillRect(42,14,7,18);g.fillRect(-5,48,7,18);g.fillRect(42,48,7,18);
-g.fillStyle=col;g.beginPath();g.roundRect(0,0,44,76,10);g.fill();
-g.fillStyle="#1b1b1b";g.fillRect(7,6,30,7);g.fillRect(7,63,30,7);
-g.fillStyle="#bde9ff";g.beginPath();g.roundRect(8,13,28,20,5);g.fill();
-g.fillStyle="#9bd4f2";g.fillRect(10,16,24,4);
-g.fillStyle="#dfe6e9";g.fillRect(8,39,28,4);
-g.fillStyle="#fff7cc";g.fillRect(4,5,8,4);g.fillRect(32,5,8,4);
-g.fillStyle="#ff5252";g.fillRect(4,67,8,4);g.fillRect(32,67,8,4);
-g.fillStyle="rgba(255,255,255,.25)";g.fillRect(4,6,4,55);
-g.restore()}
+
+// soft shadow
+g.fillStyle="rgba(0,0,0,.35)";
+g.beginPath();g.ellipse(22,67,27,10,0,0,Math.PI*2);g.fill();
+
+// tires
+g.fillStyle="#111";
+g.fillRect(-5,16,8,20);g.fillRect(41,16,8,20);
+g.fillRect(-5,48,8,20);g.fillRect(41,48,8,20);
+
+// main 3D body gradient
+var bodyGrad=g.createLinearGradient(0,0,44,0);
+bodyGrad.addColorStop(0,"#7a0f0f");
+bodyGrad.addColorStop(.18,col);
+bodyGrad.addColorStop(.52,"#ff6b6b");
+bodyGrad.addColorStop(.82,col);
+bodyGrad.addColorStop(1,"#6e0d0d");
+g.fillStyle=bodyGrad;
+g.beginPath();
+g.moveTo(7,4);
+g.quadraticCurveTo(22,-2,37,4);
+g.lineTo(44,18);
+g.lineTo(42,61);
+g.quadraticCurveTo(22,78,2,61);
+g.lineTo(0,18);
+g.closePath();
+g.fill();
+
+// hood and roof depth
+var hood=g.createLinearGradient(0,6,0,32);
+hood.addColorStop(0,"rgba(255,255,255,.55)");
+hood.addColorStop(.3,"rgba(255,255,255,.12)");
+hood.addColorStop(1,"rgba(0,0,0,.18)");
+g.fillStyle=hood;
+g.beginPath();
+g.moveTo(8,7);g.lineTo(36,7);g.lineTo(39,21);g.lineTo(5,21);g.closePath();g.fill();
+
+var roof=g.createLinearGradient(0,22,0,54);
+roof.addColorStop(0,"#d7f2ff");
+roof.addColorStop(.5,"#84c9ec");
+roof.addColorStop(1,"#3f88b5");
+g.fillStyle=roof;
+g.beginPath();
+g.moveTo(9,23);g.lineTo(35,23);g.lineTo(38,47);g.lineTo(6,47);g.closePath();g.fill();
+
+// windshield reflection
+g.fillStyle="rgba(255,255,255,.45)";
+g.beginPath();g.moveTo(11,25);g.lineTo(21,25);g.lineTo(17,44);g.lineTo(8,44);g.closePath();g.fill();
+
+// center body ridge
+g.fillStyle="rgba(255,255,255,.18)";
+g.fillRect(19,5,4,55);
+
+// bumpers
+g.fillStyle="#222";g.fillRect(7,2,30,5);g.fillRect(7,66,30,5);
+g.fillStyle="#d8d8d8";g.fillRect(10,3,24,2);g.fillRect(10,67,24,2);
+
+// headlights / tail lights
+g.fillStyle="#fff7b0";g.fillRect(5,8,8,5);g.fillRect(31,8,8,5);
+g.fillStyle="#ff3b30";g.fillRect(5,60,8,5);g.fillRect(31,60,8,5);
+
+// side highlights
+g.fillStyle="rgba(255,255,255,.35)";
+g.fillRect(3,18,3,35);
+g.fillStyle="rgba(0,0,0,.22)";
+g.fillRect(38,18,3,35);
+
+g.restore()
+}
 function draw(){var r=road();g.fillStyle="#2e9b3f";g.fillRect(0,0,W,H);
 var sy=(tick*.45)%150;
 for(var q=-1;q<7;q++){
