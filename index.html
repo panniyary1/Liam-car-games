@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Liam Car Games</title>
+<style>
+:root{--blue:#2563eb;--dark:#0f172a;--card:#ffffff;--muted:#64748b;--road:#50555a;--grass:#64a447}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#eef2f7;color:#111827;font-family:Arial,sans-serif;overscroll-behavior:none}body{min-height:100vh}.app{max-width:560px;margin:0 auto;padding:12px}.brand{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;border-radius:20px;padding:15px 16px;margin-bottom:10px}.brand h1{font-size:25px;line-height:1;margin:0 0 6px}.brand p{margin:0;color:#dbeafe;font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.stat{background:white;border-radius:12px;padding:8px 5px;text-align:center;font-size:11px}.stat b{display:block;font-size:17px;margin-top:2px}.cars{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px}.car-btn{border:2px solid transparent;background:white;border-radius:13px;padding:9px 4px;min-height:54px;font-size:12px;font-weight:700}.car-btn.selected{border-color:var(--blue);box-shadow:0 0 0 2px #dbeafe inset}.game-shell{position:relative;border-radius:20px;overflow:hidden;background:#111827;box-shadow:0 8px 24px rgba(15,23,42,.18)}svg{display:block;width:100%;height:auto;touch-action:none}.controls{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:8px;margin-top:10px}.controls button,.restart{min-height:52px;border:0;border-radius:14px;background:white;font-weight:800;font-size:18px}.controls .start{background:var(--blue);color:white;font-size:15px}.message{background:white;border-radius:14px;padding:11px 12px;margin-top:10px;font-size:13px;line-height:1.35}.restart{width:100%;margin-top:8px;font-size:14px;border:1px solid #d1d5db}.small{font-size:11px;color:var(--muted);text-align:center;margin:9px 0 2px}@media(max-width:380px){.brand h1{font-size:22px}.stats{gap:4px}.stat{font-size:10px}.stat b{font-size:15px}.car-btn{font-size:11px;padding:6px 2px}.controls button{min-height:48px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand"><h1>🏎️ LIAM CAR GAMES</h1><p>Corre · Recoge monedas · Desbloquea carros</p></div>
+  <div class="stats">
+    <div class="stat">⭐ Puntos<b id="score">0</b></div>
+    <div class="stat">🪙 Carrera<b id="runCoins">0</b></div>
+    <div class="stat">🏁 Nivel<b id="level">1</b></div>
+    <div class="stat">🏆 Récord<b id="best">0</b></div>
+  </div>
+  <div class="cars">
+    <button class="car-btn selected" data-car="red">🔴<br>Rojo<br>GRATIS</button>
+    <button class="car-btn" data-car="blue">🔵<br>Azul<br>15 🪙</button>
+    <button class="car-btn" data-car="yellow">🟡<br>Amarillo<br>35 🪙</button>
+  </div>
+  <div class="game-shell">
+    <svg id="game" viewBox="0 0 360 560" aria-label="Juego de carreras">
+      <rect width="360" height="560" fill="#64a447"/>
+      <rect x="34" width="292" height="560" fill="#50555a"/>
+      <rect x="27" width="7" height="560" fill="#f5f5f5"/>
+      <rect x="326" width="7" height="560" fill="#f5f5f5"/>
+      <g id="roadLines"></g><g id="objects"></g>
+      <g id="player" transform="translate(154 448)">
+        <rect id="carBody" x="0" y="10" width="52" height="90" rx="16" fill="#ef4444"/>
+        <rect id="carTop" x="7" y="0" width="38" height="29" rx="12" fill="#ef4444"/>
+        <rect x="10" y="18" width="32" height="23" rx="7" fill="#bae6fd"/>
+        <circle cx="10" cy="86" r="5" fill="#fde047"/><circle cx="42" cy="86" r="5" fill="#fde047"/>
+        <rect x="-4" y="25" width="7" height="23" rx="3" fill="#171717"/><rect x="49" y="25" width="7" height="23" rx="3" fill="#171717"/>
+        <rect x="-4" y="68" width="7" height="23" rx="3" fill="#171717"/><rect x="49" y="68" width="7" height="23" rx="3" fill="#171717"/>
+      </g>
+      <g id="overlay">
+        <rect x="35" y="130" width="290" height="255" rx="26" fill="rgba(15,23,42,.93)"/>
+        <text x="180" y="190" text-anchor="middle" fill="white" font-size="30" font-weight="900">LIAM</text>
+        <text x="180" y="227" text-anchor="middle" fill="#60a5fa" font-size="26" font-weight="900">CAR GAMES</text>
+        <text x="180" y="275" text-anchor="middle" fill="white" font-size="15">🪙 Recoge monedas</text>
+        <text x="180" y="305" text-anchor="middle" fill="white" font-size="15">🚧 Evita los conos</text>
+        <text x="180" y="335" text-anchor="middle" fill="white" font-size="15">🏎️ Desbloquea carros</text>
+        <text x="180" y="370" text-anchor="middle" fill="#fde047" font-size="18" font-weight="800">¡VAMOS LIAM!</text>
+      </g>
+    </svg>
+  </div>
+  <div class="controls"><button id="left">⬅</button><button id="start" class="start">▶ JUGAR</button><button id="right">➡</button></div>
+  <div id="message" class="message">Banco: <strong id="bank">0</strong> 🪙 · Elige tu carro y presiona <strong>JUGAR</strong>.</div>
+  <button id="restart" class="restart">🔄 Reiniciar carrera</button>
+  <div class="small">Liam Car Games · Versión 1.0</div>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const lanes=[75,154,233],colors={red:'#ef4444',blue:'#2563eb',yellow:'#facc15'},prices={red:0,blue:15,yellow:35};
+let bank=Number(localStorage.getItem('lcg_bank')||0),best=Number(localStorage.getItem('lcg_best')||0);
+let unlocked=new Set(JSON.parse(localStorage.getItem('lcg_unlocked')||'["red"]'));
+let selected=localStorage.getItem('lcg_selected')||'red';if(!unlocked.has(selected))selected='red';
+let lane=1,score=0,runCoins=0,level=1,running=false,last=0,spawnClock=0,lineShift=0,items=[],raf=0;
+const player=$('#player'),body=$('#carBody'),top=$('#carTop'),objects=$('#objects'),lines=$('#roadLines'),overlay=$('#overlay'),startBtn=$('#start'),msg=$('#message');
+function save(){localStorage.setItem('lcg_bank',bank);localStorage.setItem('lcg_best',best);localStorage.setItem('lcg_unlocked',JSON.stringify([...unlocked]));localStorage.setItem('lcg_selected',selected)}
+function road(){lines.innerHTML='';[119,198].forEach(x=>{for(let y=-60;y<620;y+=82){const r=document.createElementNS('http://www.w3.org/2000/svg','rect');r.setAttribute('x',x);r.setAttribute('y',y);r.setAttribute('width',8);r.setAttribute('height',43);r.setAttribute('rx',4);r.setAttribute('fill','#fff');lines.appendChild(r)}})}
+function car(){body.setAttribute('fill',colors[selected]);top.setAttribute('fill',colors[selected]);player.setAttribute('transform',`translate(${lanes[lane]} 448)`)}
+function hud(){level=Math.max(1,Math.floor(score/100)+1);$('#score').textContent=Math.floor(score);$('#runCoins').textContent=runCoins;$('#level').textContent=level;$('#best').textContent=best;$('#bank').textContent=bank;$$('.car-btn').forEach(b=>b.classList.toggle('selected',b.dataset.car===selected))}
+function choose(c){if(running)return;if(!unlocked.has(c)){let p=prices[c];if(bank>=p){bank-=p;unlocked.add(c);selected=c;msg.innerHTML=`✅ ¡Carro desbloqueado! Banco: <strong>${bank}</strong> 🪙`;save()}else{msg.innerHTML=`🔒 Te faltan <strong>${p-bank}</strong> monedas para ese carro.`;return}}else selected=c;save();car();hud()}
+function clearItems(){items=[];objects.innerHTML=''}
+function spawn(){const coin=Math.random()<.62,l=Math.floor(Math.random()*3),g=document.createElementNS('http://www.w3.org/2000/svg','g');if(coin)g.innerHTML='<circle cx="26" cy="26" r="19" fill="#facc15" stroke="#fef08a" stroke-width="4"></circle><text x="26" y="33" text-anchor="middle" font-size="20" font-weight="900" fill="#854d0e">$</text>';else g.innerHTML='<path d="M26 2 L45 65 H7 Z" fill="#f97316"></path><rect x="12" y="32" width="28" height="8" fill="white"></rect><rect x="15" y="50" width="22" height="7" fill="white"></rect>';objects.appendChild(g);items.push({el:g,lane:l,y:-70,type:coin?'coin':'block',hit:false})}
+function move(d){if(!running)return;lane=Math.max(0,Math.min(2,lane+d));car()}
+function reset(){cancelAnimationFrame(raf);running=false;lane=1;score=0;runCoins=0;level=1;spawnClock=0;last=0;clearItems();car();hud();overlay.style.display='';startBtn.textContent='▶ JUGAR';msg.innerHTML=`Banco: <strong>${bank}</strong> 🪙 · Elige tu carro y presiona <strong>JUGAR</strong>.`}
+function start(){if(running)return;if(score>0||runCoins>0)reset();running=true;overlay.style.display='none';startBtn.textContent='🏎️ CORRIENDO';msg.textContent='¡Vamos Liam! Recoge monedas y evita los conos.';last=performance.now();raf=requestAnimationFrame(loop)}
+function over(){running=false;cancelAnimationFrame(raf);bank+=runCoins;best=Math.max(best,Math.floor(score));save();startBtn.textContent='▶ OTRA VEZ';msg.innerHTML=`🏁 <strong>Fin de carrera</strong> · ⭐ ${Math.floor(score)} · 🪙 ${runCoins} guardadas · Banco: <strong>${bank}</strong>`;hud()}
+function loop(t){if(!running)return;const dt=Math.min(32,t-last);last=t;const speed=.14+level*.02;score+=dt*.0045;spawnClock+=dt;lineShift=(lineShift+dt*speed)%82;lines.setAttribute('transform',`translate(0 ${lineShift})`);if(spawnClock>Math.max(410,900-level*48)){spawnClock=0;spawn()}for(const i of items){i.y+=dt*speed;i.el.setAttribute('transform',`translate(${lanes[i.lane]} ${i.y})`);if(!i.hit&&i.lane===lane&&i.y>395&&i.y<520){i.hit=true;if(i.type==='coin'){runCoins++;score+=10;i.el.remove()}else{over();return}}}items=items.filter(i=>{if(i.hit&&i.type==='coin')return false;if(i.y>610){i.el.remove();return false}return true});hud();raf=requestAnimationFrame(loop)}
+road();car();hud();$$('.car-btn').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.car)));$('#left').addEventListener('click',()=>move(-1));$('#right').addEventListener('click',()=>move(1));startBtn.addEventListener('click',start);$('#restart').addEventListener('click',reset);
+let sx=null;$('#game').addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});$('#game').addEventListener('touchend',e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>25)move(dx>0?1:-1);sx=null},{passive:true});
+})();
+</script>
+</body>
+</html>
