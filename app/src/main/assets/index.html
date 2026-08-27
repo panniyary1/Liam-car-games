@@ -1,157 +1,148 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Liam Car Games</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#79c9ff;touch-action:none}
+button{font-family:inherit;font-weight:900}
+.screen{position:fixed;inset:0;display:none}
+.show{display:block}
+#home{background:linear-gradient(#79c9ff 0 55%,#64bd4f 55%);text-align:center;color:#fff}
+.logo{margin-top:7vh;font-size:clamp(30px,7vw,58px);text-shadow:0 4px 0 #1557a5,0 7px 12px #0005}
+.sub{font-size:18px;margin:8px 0 24px;text-shadow:0 2px 4px #0005}
+.big{display:block;width:min(310px,76vw);margin:14px auto;padding:18px;border:0;border-radius:22px;font-size:25px;box-shadow:0 7px 0 #0003}
+.play{background:#ffd43b;color:#3c2a00}.garage{background:#31b7ff;color:#fff}.driver{background:#ff7f9d;color:#fff}
+#kid{font-size:74px;margin-top:12px}
+#garage,#driver{background:linear-gradient(#dff3ff,#8dd4ff);padding:20px;text-align:center}
+.panel{background:#fff;border-radius:24px;padding:18px;max-width:620px;margin:12px auto;box-shadow:0 8px 24px #0002}
+.choice{display:inline-flex;align-items:center;justify-content:center;width:92px;height:92px;margin:7px;border:5px solid transparent;border-radius:22px;background:#eef7ff;font-size:50px}
+.choice.sel{border-color:#ffd43b}
+.back{position:fixed;top:15px;left:15px;border:0;border-radius:14px;padding:12px 16px;font-size:22px}
+#game{background:#6bc44f}
+canvas{width:100%;height:100%;display:block}
+#hud{position:fixed;top:10px;left:12px;color:#fff;font-size:19px;font-weight:900;text-shadow:0 2px 4px #000;z-index:5}
+#place{position:fixed;top:10px;right:12px;color:#fff;font-size:19px;font-weight:900;text-shadow:0 2px 4px #000;z-index:5}
+.ctrl{position:fixed;bottom:22px;width:80px;height:80px;border-radius:50%;border:4px solid #fff;background:#1976d2cc;color:#fff;font-size:38px;z-index:6}
+#left{left:22px}#right{right:22px}
+#goHome{position:fixed;top:48px;right:12px;border:0;border-radius:12px;padding:9px 12px;z-index:6}
+</style>
+</head>
+<body>
 
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Liam Car Games</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;font-family:Arial,sans-serif;touch-action:none}canvas{display:block;width:100%;height:100%}#title{position:fixed;top:10px;width:100%;text-align:center;color:#ffd600;font-size:22px;font-weight:bold;z-index:3}#hud{position:fixed;top:42px;left:14px;color:white;font-size:18px;font-weight:bold;z-index:3}#level{position:fixed;top:42px;right:14px;color:white;font-size:18px;font-weight:bold;z-index:3}.btn{position:fixed;bottom:22px;width:78px;height:78px;border-radius:50%;border:3px solid white;background:#555;color:white;font-size:36px;z-index:4}#left{left:22px}#right{right:22px}#start{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:16px;padding:17px 28px;background:#ffd600;font-size:22px;font-weight:bold;z-index:5}</style></head><body><div id="title">LIAM CAR GAMES</div><div id="hud">Coins: <span id="coins">0</span></div><div id="level">Level 1</div><canvas id="game"></canvas><button id="left" class="btn">&#9664;</button><button id="right" class="btn">&#9654;</button><button id="start">START RACE</button><script>
-var c=document.getElementById("game"),g=c.getContext("2d"),W,H,playing=false,move=0,coins=0,level=1,tick=0,traffic=[],money=[],car={x:0,y:0,w:44,h:76};
-function size(){W=c.width=innerWidth;H=c.height=innerHeight;car.y=H-130;if(!playing)car.x=W/2-22}addEventListener("resize",size);size();
-function road(){var rw=Math.min(W*.72,560);return{x:(W-rw)/2,w:rw}}
-function dc(x,y,col){
-g.save();g.translate(x,y);
+<section id="home" class="screen show">
+  <div class="logo">🏁 LIAM CAR GAMES 🏁</div>
+  <div class="sub">Pick a car. Drive. Collect coins!</div>
+  <div id="kid">🧒</div>
+  <button class="big play" onclick="startGame()">▶ PLAY</button>
+  <button class="big garage" onclick="show('garage')">🚗 MY GARAGE</button>
+  <button class="big driver" onclick="show('driver')">🙂 MY DRIVER</button>
+</section>
 
-// soft shadow
-g.fillStyle="rgba(0,0,0,.35)";
-g.beginPath();g.ellipse(22,67,27,10,0,0,Math.PI*2);g.fill();
+<section id="garage" class="screen">
+  <button class="back" onclick="show('home')">←</button>
+  <div class="panel">
+    <h1>Choose Your Car</h1>
+    <div class="choice sel" data-car="sport" onclick="pickCar(this)">🏎️</div>
+    <div class="choice" data-car="suv" onclick="pickCar(this)">🚙</div>
+    <div class="choice" data-car="truck" onclick="pickCar(this)">🛻</div>
+    <div class="choice" data-car="police" onclick="pickCar(this)">🚓</div>
+    <p>Tap a car, then PLAY!</p>
+    <button class="big play" onclick="startGame()">▶ PLAY</button>
+  </div>
+</section>
 
-// tires
-g.fillStyle="#111";
-g.fillRect(-5,16,8,20);g.fillRect(41,16,8,20);
-g.fillRect(-5,48,8,20);g.fillRect(41,48,8,20);
+<section id="driver" class="screen">
+  <button class="back" onclick="show('home')">←</button>
+  <div class="panel">
+    <h1>Choose Your Driver</h1>
+    <div class="choice sel" data-kid="🧒" onclick="pickKid(this)">🧒</div>
+    <div class="choice" data-kid="👦" onclick="pickKid(this)">👦</div>
+    <div class="choice" data-kid="👧" onclick="pickKid(this)">👧</div>
+    <div class="choice" data-kid="🧑" onclick="pickKid(this)">🧑</div>
+    <button class="big play" onclick="show('home')">✓ DONE</button>
+  </div>
+</section>
 
-// main 3D body gradient
-var bodyGrad=g.createLinearGradient(0,0,44,0);
-bodyGrad.addColorStop(0,"#7a0f0f");
-bodyGrad.addColorStop(.18,col);
-bodyGrad.addColorStop(.52,"#ff6b6b");
-bodyGrad.addColorStop(.82,col);
-bodyGrad.addColorStop(1,"#6e0d0d");
-g.fillStyle=bodyGrad;
-g.beginPath();
-g.moveTo(7,4);
-g.quadraticCurveTo(22,-2,37,4);
-g.lineTo(44,18);
-g.lineTo(42,61);
-g.quadraticCurveTo(22,78,2,61);
-g.lineTo(0,18);
-g.closePath();
-g.fill();
+<section id="game" class="screen">
+  <canvas id="c"></canvas>
+  <div id="hud">🪙 <span id="coins">0</span></div>
+  <div id="place">🌳 Countryside</div>
+  <button id="goHome" onclick="show('home')">HOME</button>
+  <button id="left" class="ctrl">◀</button>
+  <button id="right" class="ctrl">▶</button>
+</section>
 
-// hood and roof depth
-var hood=g.createLinearGradient(0,6,0,32);
-hood.addColorStop(0,"rgba(255,255,255,.55)");
-hood.addColorStop(.3,"rgba(255,255,255,.12)");
-hood.addColorStop(1,"rgba(0,0,0,.18)");
-g.fillStyle=hood;
-g.beginPath();
-g.moveTo(8,7);g.lineTo(36,7);g.lineTo(39,21);g.lineTo(5,21);g.closePath();g.fill();
+<script>
+var currentCar="sport",kid="🧒",coins=0,playing=false,move=0,tick=0,traffic=[],money=[];
+var c=document.getElementById("c"),g=c.getContext("2d"),W,H,car={x:0,y:0,w:52,h:92};
 
-var roof=g.createLinearGradient(0,22,0,54);
-roof.addColorStop(0,"#d7f2ff");
-roof.addColorStop(.5,"#84c9ec");
-roof.addColorStop(1,"#3f88b5");
-g.fillStyle=roof;
-g.beginPath();
-g.moveTo(9,23);g.lineTo(35,23);g.lineTo(38,47);g.lineTo(6,47);g.closePath();g.fill();
+function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("show"));document.getElementById(id).classList.add("show");playing=id==="game"}
+function pickCar(el){document.querySelectorAll("#garage .choice").forEach(x=>x.classList.remove("sel"));el.classList.add("sel");currentCar=el.dataset.car}
+function pickKid(el){document.querySelectorAll("#driver .choice").forEach(x=>x.classList.remove("sel"));el.classList.add("sel");kid=el.dataset.kid;document.getElementById("kid").textContent=kid}
+function size(){W=c.width=innerWidth;H=c.height=innerHeight;car.y=H-145;if(!playing)car.x=W/2-car.w/2}
+addEventListener("resize",size);size();
 
-// windshield reflection
-g.fillStyle="rgba(255,255,255,.45)";
-g.beginPath();g.moveTo(11,25);g.lineTo(21,25);g.lineTo(17,44);g.lineTo(8,44);g.closePath();g.fill();
+function startGame(){coins=0;traffic=[];money=[];document.getElementById("coins").textContent=0;size();show("game")}
 
-// center body ridge
-g.fillStyle="rgba(255,255,255,.18)";
-g.fillRect(19,5,4,55);
+function road(){var top=W*.18,bottom=W*.76;return{top:top,bottom:bottom,cx:W/2}}
+function roadX(y){var r=road(),t=y/H,w=r.top+(r.bottom-r.top)*t;return{x:W/2-w/2,w:w}}
 
-// bumpers
-g.fillStyle="#222";g.fillRect(7,2,30,5);g.fillRect(7,66,30,5);
-g.fillStyle="#d8d8d8";g.fillRect(10,3,24,2);g.fillRect(10,67,24,2);
+function tree(x,y,s){g.fillStyle="#6d4c2e";g.fillRect(x-4*s,y,8*s,22*s);g.fillStyle="#267c35";g.beginPath();g.arc(x,y-8*s,18*s,0,7);g.fill();g.fillStyle="#3ca54c";g.beginPath();g.arc(x-8*s,y-13*s,10*s,0,7);g.fill()}
+function animal(x,y,type,s){g.font=(30*s)+"px Arial";g.textAlign="center";g.fillText(type,x,y)}
+function house(x,y,s){g.fillStyle="#ffe0a8";g.fillRect(x-25*s,y,50*s,34*s);g.fillStyle="#b85c2c";g.beginPath();g.moveTo(x-31*s,y);g.lineTo(x,y-25*s);g.lineTo(x+31*s,y);g.fill();g.fillStyle="#6ec5ff";g.fillRect(x-17*s,y+8*s,12*s,11*s);g.fillRect(x+7*s,y+8*s,12*s,11*s)}
 
-// headlights / tail lights
-g.fillStyle="#fff7b0";g.fillRect(5,8,8,5);g.fillRect(31,8,8,5);
-g.fillStyle="#ff3b30";g.fillRect(5,60,8,5);g.fillRect(31,60,8,5);
-
-// side highlights
-g.fillStyle="rgba(255,255,255,.35)";
-g.fillRect(3,18,3,35);
-g.fillStyle="rgba(0,0,0,.22)";
-g.fillRect(38,18,3,35);
-
-g.restore()
-}
-function draw(){var r=road();// sky/grass depth
-var grassGrad=g.createLinearGradient(0,0,0,H);
-grassGrad.addColorStop(0,"#4fc35a");
-grassGrad.addColorStop(1,"#1f7f35");
-g.fillStyle=grassGrad;g.fillRect(0,0,W,H);
-
-// distant hills
-g.fillStyle="#6aa84f";
-g.beginPath();g.moveTo(0,H*.18);g.quadraticCurveTo(W*.15,H*.08,W*.3,H*.18);g.quadraticCurveTo(W*.45,H*.05,W*.62,H*.18);g.quadraticCurveTo(W*.8,H*.09,W,H*.18);g.lineTo(W,H*.28);g.lineTo(0,H*.28);g.closePath();g.fill();
-g.fillStyle="#5b8f45";
-g.beginPath();g.moveTo(0,H*.23);g.quadraticCurveTo(W*.18,H*.14,W*.34,H*.23);g.quadraticCurveTo(W*.52,H*.12,W*.7,H*.23);g.quadraticCurveTo(W*.86,H*.15,W,H*.23);g.lineTo(W,H*.31);g.lineTo(0,H*.31);g.closePath();g.fill();
-
-// moving scenery
-var sy=(tick*.40)%170;
-for(var q=-1;q<7;q++){
-  var yy=q*170+sy;
-
-  // trees left
-  g.fillStyle="#6b4f2a";g.fillRect(22,yy+35,9,38);
-  g.fillStyle="#1d6f2b";g.beginPath();g.arc(26,yy+24,24,0,Math.PI*2);g.fill();
-  g.fillStyle="#2f8f3b";g.beginPath();g.arc(15,yy+18,13,0,Math.PI*2);g.fill();
-
-  // trees right
-  g.fillStyle="#6b4f2a";g.fillRect(W-31,yy+35,9,38);
-  g.fillStyle="#1d6f2b";g.beginPath();g.arc(W-26,yy+24,24,0,Math.PI*2);g.fill();
-  g.fillStyle="#3aa44c";g.beginPath();g.arc(W-37,yy+18,13,0,Math.PI*2);g.fill();
-
-  if(q%3===0){
-    // farmhouse
-    g.fillStyle="#f1d7a8";g.fillRect(W-120,yy+76,55,36);
-    g.fillStyle="#a85d24";g.beginPath();g.moveTo(W-126,yy+76);g.lineTo(W-92,yy+50);g.lineTo(W-59,yy+76);g.fill();
-    g.fillStyle="#76c3ef";g.fillRect(W-108,yy+85,13,12);g.fillRect(W-84,yy+85,13,12);
-    g.fillStyle="#7d4a24";g.fillRect(W-93,yy+90,10,22);
-
-    // cow
-    g.fillStyle="#f5f5f5";g.fillRect(52,yy+83,34,20);
-    g.fillStyle="#222";g.fillRect(58,yy+98,6,12);g.fillRect(77,yy+98,6,12);
-    g.fillStyle="#111";g.fillRect(78,yy+87,12,9);
-    g.fillStyle="#111";g.fillRect(58,yy+86,7,6);
-    g.fillRect(71,yy+91,6,7);
-  } else if(q%3===1){
-    // horse
-    g.fillStyle="#9b5f34";g.fillRect(48,yy+84,37,18);
-    g.fillRect(54,yy+100,5,13);g.fillRect(76,yy+100,5,13);
-    g.fillStyle="#70421f";g.fillRect(79,yy+77,11,16);
-    g.fillStyle="#111";g.fillRect(86,yy+80,3,3);
-
-    // rocks and bush right
-    g.fillStyle="#777";g.beginPath();g.arc(W-78,yy+93,13,0,Math.PI*2);g.fill();
-    g.fillStyle="#2d7f38";g.beginPath();g.arc(W-100,yy+88,18,0,Math.PI*2);g.fill();
-  } else {
-    // barn
-    g.fillStyle="#b94335";g.fillRect(44,yy+72,53,40);
-    g.fillStyle="#7f2d26";g.beginPath();g.moveTo(38,yy+72);g.lineTo(70,yy+48);g.lineTo(103,yy+72);g.fill();
-    g.fillStyle="#fff";g.fillRect(62,yy+84,18,28);
-
-    // sheep
-    g.fillStyle="#fff";g.beginPath();g.arc(W-82,yy+91,13,0,Math.PI*2);g.fill();
-    g.beginPath();g.arc(W-94,yy+90,11,0,Math.PI*2);g.fill();
-    g.fillStyle="#222";g.fillRect(W-72,yy+89,10,8);
-    g.fillRect(W-93,yy+101,4,10);g.fillRect(W-79,yy+101,4,10);
-  }
+function car3d(x,y,col,scale){
+ g.save();g.translate(x,y);g.scale(scale,scale);
+ g.fillStyle="#0005";g.beginPath();g.ellipse(26,83,31,11,0,0,7);g.fill();
+ g.fillStyle="#111";g.fillRect(-5,18,9,22);g.fillRect(48,18,9,22);g.fillRect(-5,57,9,22);g.fillRect(48,57,9,22);
+ var b=g.createLinearGradient(0,0,52,0);b.addColorStop(0,"#641010");b.addColorStop(.18,col);b.addColorStop(.5,"#ff7777");b.addColorStop(.82,col);b.addColorStop(1,"#641010");
+ g.fillStyle=b;g.beginPath();g.moveTo(8,4);g.quadraticCurveTo(26,-2,44,4);g.lineTo(52,22);g.lineTo(49,72);g.quadraticCurveTo(26,92,3,72);g.lineTo(0,22);g.closePath();g.fill();
+ var glass=g.createLinearGradient(0,20,0,57);glass.addColorStop(0,"#dff6ff");glass.addColorStop(1,"#4c93bd");g.fillStyle=glass;g.beginPath();g.moveTo(10,24);g.lineTo(42,24);g.lineTo(45,54);g.lineTo(7,54);g.closePath();g.fill();
+ g.fillStyle="#fff7aa";g.fillRect(5,9,10,6);g.fillRect(37,9,10,6);g.fillStyle="#ff3333";g.fillRect(5,70,10,6);g.fillRect(37,70,10,6);
+ g.fillStyle="#fff5";g.fillRect(6,12,4,48);g.restore()
 }
 
-// road shoulders and asphalt
-g.fillStyle="#9b9b9b";g.fillRect(r.x-13,0,13,H);g.fillRect(r.x+r.w,0,13,H);
-var roadGrad=g.createLinearGradient(r.x,0,r.x+r.w,0);
-roadGrad.addColorStop(0,"#2f2f2f");
-roadGrad.addColorStop(.5,"#444");
-roadGrad.addColorStop(1,"#2f2f2f");
-g.fillStyle=roadGrad;g.fillRect(r.x,0,r.w,H);
+function draw(){
+ var grad=g.createLinearGradient(0,0,0,H);grad.addColorStop(0,"#8ed7ff");grad.addColorStop(.28,"#bfeaff");grad.addColorStop(.29,"#67bf50");grad.addColorStop(1,"#27883d");g.fillStyle=grad;g.fillRect(0,0,W,H);
+ // hills
+ g.fillStyle="#5ba74b";g.beginPath();g.moveTo(0,H*.28);g.quadraticCurveTo(W*.2,H*.16,W*.4,H*.28);g.quadraticCurveTo(W*.65,H*.13,W,H*.28);g.lineTo(W,H*.36);g.lineTo(0,H*.36);g.fill();
 
-// road edge lines
-g.fillStyle="#f7f7f7";g.fillRect(r.x+5,0,4,H);g.fillRect(r.x+r.w-9,0,4,H);g.fillStyle="white";g.fillRect(r.x,0,5,H);g.fillRect(r.x+r.w-5,0,5,H);for(var y=tick%70-70;y<H;y+=70)g.fillRect(W/2-3,y,6,35);for(var i=0;i<money.length;i++){var m=money[i];var cg=g.createRadialGradient(m.x-6,m.y-7,3,m.x,m.y,20);cg.addColorStop(0,"#fff8a6");cg.addColorStop(.35,"#ffd740");cg.addColorStop(1,"#f6a700");g.beginPath();g.arc(m.x,m.y,20,0,Math.PI*2);g.fillStyle=cg;g.fill();g.lineWidth=4;g.strokeStyle="#c67c00";g.stroke();g.beginPath();g.arc(m.x-6,m.y-6,5,0,Math.PI*2);g.fillStyle="#fff59d";g.fill();g.fillStyle="#7a4b00";g.font="bold 18px Arial";g.textAlign="center";g.textBaseline="middle";g.fillText("$",m.x,m.y+1)}for(i=0;i<traffic.length;i++)dc(traffic[i].x,traffic[i].y,"#e53935");dc(car.x,car.y,coins>=20?"#ffd600":coins>=10?"#2196f3":"#e53935")}
-function hit(o){return car.x<o.x+44&&car.x+44>o.x&&car.y<o.y+76&&car.y+76>o.y}
-function over(){playing=false;move=0;var s=document.getElementById("start");s.style.display="block";s.textContent="TRY AGAIN"}
-function update(){if(!playing)return;var r=road(),sp=2.8+level*.18;tick+=sp;car.x+=move;if(car.x<r.x+8)car.x=r.x+8;if(car.x>r.x+r.w-52)car.x=r.x+r.w-52;if(Math.random()<.018+.002*level)traffic.push({x:r.x+18+Math.random()*(r.w-80),y:-90});if(Math.random()<.014)money.push({x:r.x+28+Math.random()*(r.w-56),y:-25});for(var i=traffic.length-1;i>=0;i--){traffic[i].y+=sp;if(hit(traffic[i])){over();return}if(traffic[i].y>H+100)traffic.splice(i,1)}for(i=money.length-1;i>=0;i--){var m=money[i];m.y+=sp;if(car.x<m.x+20&&car.x+44>m.x-20&&car.y<m.y+20&&car.y+76>m.y-20){coins++;money.splice(i,1);document.getElementById("coins").textContent=coins;level=1+Math.floor(coins/8);document.getElementById("level").textContent="Level "+level}else if(m.y>H+30)money.splice(i,1)}}
+ // perspective road
+ var r=road();g.fillStyle="#888";g.beginPath();g.moveTo(W/2-r.top/2,0);g.lineTo(W/2+r.top/2,0);g.lineTo(W/2+r.bottom/2,H);g.lineTo(W/2-r.bottom/2,H);g.fill();
+ g.fillStyle="#383838";g.beginPath();g.moveTo(W/2-r.top/2+7,0);g.lineTo(W/2+r.top/2-7,0);g.lineTo(W/2+r.bottom/2-12,H);g.lineTo(W/2-r.bottom/2+12,H);g.fill();
+
+ // center road dashes perspective
+ for(var y=(tick%110)-110;y<H;y+=110){var rx=roadX(y),t=y/H;g.fillStyle="#fff";g.fillRect(W/2-2-3*t,y,4+6*t,25+45*t)}
+
+ // scenery
+ var sy=(tick*.45)%180;
+ for(var q=-1;q<7;q++){var y=q*180+sy,s=.55+.65*(y/H);tree(28,y,s);tree(W-28,y+30,s);if(q%3===0){house(W-78,y+60,s*.8);animal(72,y+95,"🐄",s)}else if(q%3===1){animal(W-76,y+90,"🐎",s);animal(70,y+120,"🐑",s)}else{animal(W-74,y+100,"🐕",s)}}
+
+ // coins
+ money.forEach(function(m){var t=m.y/H,rad=12+9*t;var cg=g.createRadialGradient(m.x-5,m.y-6,2,m.x,m.y,rad);cg.addColorStop(0,"#fffbd0");cg.addColorStop(.35,"#ffe23b");cg.addColorStop(1,"#e99a00");g.beginPath();g.arc(m.x,m.y,rad,0,7);g.fillStyle=cg;g.fill();g.strokeStyle="#b66c00";g.lineWidth=3;g.stroke();g.fillStyle="#704500";g.font="bold "+Math.round(rad)+"px Arial";g.textAlign="center";g.textBaseline="middle";g.fillText("$",m.x,m.y+1)});
+
+ traffic.forEach(function(o){car3d(o.x,o.y,o.col,o.s)});
+ var playerColor=currentCar==="police"?"#1976d2":currentCar==="truck"?"#ef6c00":currentCar==="suv"?"#2e7d32":"#d71920";
+ car3d(car.x,car.y,playerColor,1);
+}
+
+function update(){
+ if(!playing)return;tick+=3;
+ var rb=roadX(car.y),min=rb.x+12,max=rb.x+rb.w-car.w-12;car.x+=move;if(car.x<min)car.x=min;if(car.x>max)car.x=max;
+ if(Math.random()<.012){var y=-100,rr=roadX(20),cols=["#1565c0","#f6b800","#7b1fa2","#00897b","#e53935"];traffic.push({x:rr.x+Math.random()*Math.max(10,rr.w-55),y:y,col:cols[Math.floor(Math.random()*cols.length)],s:.62})}
+ if(Math.random()<.012){var rr2=roadX(40);money.push({x:rr2.x+20+Math.random()*Math.max(10,rr2.w-40),y:-30})}
+ for(var i=traffic.length-1;i>=0;i--){var o=traffic[i];o.y+=3.2;o.s=.55+.5*(o.y/H);if(o.y>H+120)traffic.splice(i,1);else if(car.x<o.x+52*o.s&&car.x+52>o.x&&car.y<o.y+92*o.s&&car.y+92>o.y){traffic.splice(i,1)}}
+ for(i=money.length-1;i>=0;i--){var m=money[i];m.y+=3;if(car.x<m.x+24&&car.x+52>m.x-24&&car.y<m.y+24&&car.y+92>m.y-24){coins++;document.getElementById("coins").textContent=coins;money.splice(i,1)}else if(m.y>H+30)money.splice(i,1)}
+}
 function loop(){update();draw();requestAnimationFrame(loop)}loop();
-var L=document.getElementById("left"),R=document.getElementById("right");function stop(){move=0}L.ontouchstart=function(){move=-4.5};R.ontouchstart=function(){move=4.5};L.ontouchend=stop;R.ontouchend=stop;L.onmousedown=function(){move=-4.5};R.onmousedown=function(){move=4.5};L.onmouseup=stop;R.onmouseup=stop;
-document.getElementById("start").onclick=function(){traffic=[];money=[];coins=0;level=1;document.getElementById("coins").textContent="0";document.getElementById("level").textContent="Level 1";car.x=W/2-22;playing=true;this.style.display="none"};
-</script></body></html>
+
+var L=document.getElementById("left"),R=document.getElementById("right");
+function stop(e){if(e)e.preventDefault();move=0}
+L.ontouchstart=function(e){e.preventDefault();move=-4};R.ontouchstart=function(e){e.preventDefault();move=4};L.ontouchend=stop;R.ontouchend=stop;
+L.onmousedown=function(){move=-4};R.onmousedown=function(){move=4};L.onmouseup=stop;R.onmouseup=stop;
+</script>
+</body>
+</html>
