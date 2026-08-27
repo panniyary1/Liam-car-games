@@ -1,58 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Liam Car Games</title>
-
-<style>
-html, body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: #111;
-    font-family: Arial, sans-serif;
-    touch-action: none;
-}
-
-#game {
-    display: block;
-    width: 100vw;
-    height: 100vh;
-    background: #222;
-}
-
-#score {
-    position: fixed;
-    top: 15px;
-    left: 20px;
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-    z-index: 5;
-    text-shadow: 2px 2px 4px black;
-}
-
-#title {
-    position: fixed;
-    top: 12px;
-    width: 100%;
-    text-align: center;
-    color: #ffd500;
-    font-size: 26px;
-    font-weight: bold;
-    z-index: 5;
-    text-shadow: 2px 2px 5px black;
-}
-
-.control {
-    position: fixed;
-    bottom: 25px;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid white;
-    background: rgba(255,255,255,0.20);
-    color: white;
-    font-size: 40px;
-    font
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Liam Car Games</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;font-family:Arial,sans-serif;touch-action:none}canvas{display:block;width:100%;height:100%}#title{position:fixed;top:10px;width:100%;text-align:center;color:#ffd600;font-size:22px;font-weight:bold;z-index:3}#hud{position:fixed;top:42px;left:14px;color:white;font-size:18px;font-weight:bold;z-index:3}#level{position:fixed;top:42px;right:14px;color:white;font-size:18px;font-weight:bold;z-index:3}.btn{position:fixed;bottom:22px;width:78px;height:78px;border-radius:50%;border:3px solid white;background:#555;color:white;font-size:36px;z-index:4}#left{left:22px}#right{right:22px}#start{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:16px;padding:17px 28px;background:#ffd600;font-size:22px;font-weight:bold;z-index:5}</style></head><body><div id="title">LIAM CAR GAMES</div><div id="hud">Coins: <span id="coins">0</span></div><div id="level">Level 1</div><canvas id="game"></canvas><button id="left" class="btn">&#9664;</button><button id="right" class="btn">&#9654;</button><button id="start">START RACE</button><script>
+var c=document.getElementById("game"),g=c.getContext("2d"),W,H,playing=false,move=0,coins=0,level=1,tick=0,traffic=[],money=[],car={x:0,y:0,w:44,h:76};
+function size(){W=c.width=innerWidth;H=c.height=innerHeight;car.y=H-130;if(!playing)car.x=W/2-22}addEventListener("resize",size);size();
+function road(){var rw=Math.min(W*.72,560);return{x:(W-rw)/2,w:rw}}
+function dc(x,y,col){g.fillStyle=col;g.fillRect(x,y,44,76);g.fillStyle="#bfe8ff";g.fillRect(x+8,y+11,28,20);g.fillStyle="#111";g.fillRect(x-4,y+13,6,18);g.fillRect(x+42,y+13,6,18);g.fillRect(x-4,y+50,6,18);g.fillRect(x+42,y+50,6,18)}
+function draw(){var r=road();g.fillStyle="#2e9b3f";g.fillRect(0,0,W,H);g.fillStyle="#3a3a3a";g.fillRect(r.x,0,r.w,H);g.fillStyle="white";g.fillRect(r.x,0,5,H);g.fillRect(r.x+r.w-5,0,5,H);for(var y=tick%70-70;y<H;y+=70)g.fillRect(W/2-3,y,6,35);for(var i=0;i<money.length;i++){g.beginPath();g.arc(money[i].x,money[i].y,12,0,7);g.fillStyle="#ffd700";g.fill()}for(i=0;i<traffic.length;i++)dc(traffic[i].x,traffic[i].y,"#e53935");dc(car.x,car.y,coins>=20?"#ffd600":coins>=10?"#2196f3":"#e53935")}
+function hit(o){return car.x<o.x+44&&car.x+44>o.x&&car.y<o.y+76&&car.y+76>o.y}
+function over(){playing=false;move=0;var s=document.getElementById("start");s.style.display="block";s.textContent="TRY AGAIN"}
+function update(){if(!playing)return;var r=road(),sp=5+level*.35;tick+=sp;car.x+=move;if(car.x<r.x+8)car.x=r.x+8;if(car.x>r.x+r.w-52)car.x=r.x+r.w-52;if(Math.random()<.018+.002*level)traffic.push({x:r.x+18+Math.random()*(r.w-80),y:-90});if(Math.random()<.014)money.push({x:r.x+28+Math.random()*(r.w-56),y:-25});for(var i=traffic.length-1;i>=0;i--){traffic[i].y+=sp;if(hit(traffic[i])){over();return}if(traffic[i].y>H+100)traffic.splice(i,1)}for(i=money.length-1;i>=0;i--){var m=money[i];m.y+=sp;if(car.x<m.x+13&&car.x+44>m.x-13&&car.y<m.y+13&&car.y+76>m.y-13){coins++;money.splice(i,1);document.getElementById("coins").textContent=coins;level=1+Math.floor(coins/8);document.getElementById("level").textContent="Level "+level}else if(m.y>H+30)money.splice(i,1)}}
+function loop(){update();draw();requestAnimationFrame(loop)}loop();
+var L=document.getElementById("left"),R=document.getElementById("right");function stop(){move=0}L.ontouchstart=function(){move=-7};R.ontouchstart=function(){move=7};L.ontouchend=stop;R.ontouchend=stop;L.onmousedown=function(){move=-7};R.onmousedown=function(){move=7};L.onmouseup=stop;R.onmouseup=stop;
+document.getElementById("start").onclick=function(){traffic=[];money=[];coins=0;level=1;document.getElementById("coins").textContent="0";document.getElementById("level").textContent="Level 1";car.x=W/2-22;playing=true;this.style.display="none"};
+</script></body></html>
