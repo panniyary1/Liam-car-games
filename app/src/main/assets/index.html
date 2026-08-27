@@ -2,19 +2,36 @@
 var c=document.getElementById("game"),g=c.getContext("2d"),W,H,playing=false,move=0,coins=0,level=1,tick=0,traffic=[],money=[],car={x:0,y:0,w:44,h:76};
 function size(){W=c.width=innerWidth;H=c.height=innerHeight;car.y=H-130;if(!playing)car.x=W/2-22}addEventListener("resize",size);size();
 function road(){var rw=Math.min(W*.72,560);return{x:(W-rw)/2,w:rw}}
-function dc(x,y,col){g.fillStyle=col;g.fillRect(x,y,44,76);g.fillStyle="#bfe8ff";g.fillRect(x+8,y+11,28,20);g.fillStyle="#ddd";g.fillRect(x+6,y+39,32,3);g.fillStyle="#111";g.fillRect(x-4,y+13,6,18);g.fillRect(x+42,y+13,6,18);g.fillRect(x-4,y+50,6,18);g.fillRect(x+42,y+50,6,18)}
+function dc(x,y,col){
+g.save();g.translate(x,y);
+g.fillStyle="#111";g.fillRect(-5,14,7,18);g.fillRect(42,14,7,18);g.fillRect(-5,48,7,18);g.fillRect(42,48,7,18);
+g.fillStyle=col;g.beginPath();g.roundRect(0,0,44,76,10);g.fill();
+g.fillStyle="#1b1b1b";g.fillRect(7,6,30,7);g.fillRect(7,63,30,7);
+g.fillStyle="#bde9ff";g.beginPath();g.roundRect(8,13,28,20,5);g.fill();
+g.fillStyle="#9bd4f2";g.fillRect(10,16,24,4);
+g.fillStyle="#dfe6e9";g.fillRect(8,39,28,4);
+g.fillStyle="#fff7cc";g.fillRect(4,5,8,4);g.fillRect(32,5,8,4);
+g.fillStyle="#ff5252";g.fillRect(4,67,8,4);g.fillRect(32,67,8,4);
+g.fillStyle="rgba(255,255,255,.25)";g.fillRect(4,6,4,55);
+g.restore()}
 function draw(){var r=road();g.fillStyle="#2e9b3f";g.fillRect(0,0,W,H);
 var sy=(tick*.45)%150;
 for(var q=-1;q<7;q++){
  var yy=q*150+sy;
  g.fillStyle="#6d4c41";g.fillRect(18,yy+28,8,30);g.fillRect(W-26,yy+28,8,30);
  g.fillStyle="#1b5e20";g.beginPath();g.arc(22,yy+20,20,0,7);g.fill();g.beginPath();g.arc(W-22,yy+20,20,0,7);g.fill();
- if(q%2===0){g.fillStyle="#fff";g.fillRect(52,yy+65,24,15);g.fillStyle="#222";g.fillRect(57,yy+78,5,7);g.fillRect(68,yy+78,5,7);g.fillStyle="#111";g.fillRect(72,yy+67,7,6);}
+ if(q%2===0){
+g.fillStyle="#fff";g.fillRect(52,yy+65,24,15);g.fillStyle="#222";g.fillRect(57,yy+78,5,7);g.fillRect(68,yy+78,5,7);g.fillStyle="#111";g.fillRect(72,yy+67,7,6);
+g.fillStyle="#f5d7a1";g.fillRect(W-105,yy+72,44,28);g.fillStyle="#b5651d";g.beginPath();g.moveTo(W-110,yy+72);g.lineTo(W-83,yy+52);g.lineTo(W-56,yy+72);g.fill();g.fillStyle="#7ec8ff";g.fillRect(W-96,yy+80,10,10);g.fillRect(W-78,yy+80,10,10);
+}else{
+g.fillStyle="#8d6e63";g.beginPath();g.arc(65,yy+80,12,0,Math.PI*2);g.fill();
+g.fillStyle="#fff";g.fillRect(W-90,yy+72,28,17);g.fillStyle="#111";g.fillRect(W-84,yy+86,5,8);g.fillRect(W-69,yy+86,5,8);g.fillStyle="#111";g.fillRect(W-65,yy+74,9,7);
 }
-g.fillStyle="#3a3a3a";g.fillRect(r.x,0,r.w,H);g.fillStyle="white";g.fillRect(r.x,0,5,H);g.fillRect(r.x+r.w-5,0,5,H);for(var y=tick%70-70;y<H;y+=70)g.fillRect(W/2-3,y,6,35);for(var i=0;i<money.length;i++){g.beginPath();g.arc(money[i].x,money[i].y,12,0,7);g.fillStyle="#ffd700";g.fill()}for(i=0;i<traffic.length;i++)dc(traffic[i].x,traffic[i].y,"#e53935");dc(car.x,car.y,coins>=20?"#ffd600":coins>=10?"#2196f3":"#e53935")}
+}
+g.fillStyle="#777";g.fillRect(r.x-12,0,12,H);g.fillRect(r.x+r.w,0,12,H);g.fillStyle="#3a3a3a";g.fillRect(r.x,0,r.w,H);g.fillStyle="white";g.fillRect(r.x,0,5,H);g.fillRect(r.x+r.w-5,0,5,H);for(var y=tick%70-70;y<H;y+=70)g.fillRect(W/2-3,y,6,35);for(var i=0;i<money.length;i++){var m=money[i];g.beginPath();g.arc(m.x,m.y,18,0,Math.PI*2);g.fillStyle="#ffd700";g.fill();g.lineWidth=4;g.strokeStyle="#ff9800";g.stroke();g.beginPath();g.arc(m.x-6,m.y-6,5,0,Math.PI*2);g.fillStyle="#fff59d";g.fill();g.fillStyle="#7a4b00";g.font="bold 18px Arial";g.textAlign="center";g.textBaseline="middle";g.fillText("$",m.x,m.y+1)}for(i=0;i<traffic.length;i++)dc(traffic[i].x,traffic[i].y,"#e53935");dc(car.x,car.y,coins>=20?"#ffd600":coins>=10?"#2196f3":"#e53935")}
 function hit(o){return car.x<o.x+44&&car.x+44>o.x&&car.y<o.y+76&&car.y+76>o.y}
 function over(){playing=false;move=0;var s=document.getElementById("start");s.style.display="block";s.textContent="TRY AGAIN"}
-function update(){if(!playing)return;var r=road(),sp=2.8+level*.18;tick+=sp;car.x+=move;if(car.x<r.x+8)car.x=r.x+8;if(car.x>r.x+r.w-52)car.x=r.x+r.w-52;if(Math.random()<.018+.002*level)traffic.push({x:r.x+18+Math.random()*(r.w-80),y:-90});if(Math.random()<.014)money.push({x:r.x+28+Math.random()*(r.w-56),y:-25});for(var i=traffic.length-1;i>=0;i--){traffic[i].y+=sp;if(hit(traffic[i])){over();return}if(traffic[i].y>H+100)traffic.splice(i,1)}for(i=money.length-1;i>=0;i--){var m=money[i];m.y+=sp;if(car.x<m.x+13&&car.x+44>m.x-13&&car.y<m.y+13&&car.y+76>m.y-13){coins++;money.splice(i,1);document.getElementById("coins").textContent=coins;level=1+Math.floor(coins/8);document.getElementById("level").textContent="Level "+level}else if(m.y>H+30)money.splice(i,1)}}
+function update(){if(!playing)return;var r=road(),sp=2.8+level*.18;tick+=sp;car.x+=move;if(car.x<r.x+8)car.x=r.x+8;if(car.x>r.x+r.w-52)car.x=r.x+r.w-52;if(Math.random()<.018+.002*level)traffic.push({x:r.x+18+Math.random()*(r.w-80),y:-90});if(Math.random()<.014)money.push({x:r.x+28+Math.random()*(r.w-56),y:-25});for(var i=traffic.length-1;i>=0;i--){traffic[i].y+=sp;if(hit(traffic[i])){over();return}if(traffic[i].y>H+100)traffic.splice(i,1)}for(i=money.length-1;i>=0;i--){var m=money[i];m.y+=sp;if(car.x<m.x+20&&car.x+44>m.x-20&&car.y<m.y+20&&car.y+76>m.y-20){coins++;money.splice(i,1);document.getElementById("coins").textContent=coins;level=1+Math.floor(coins/8);document.getElementById("level").textContent="Level "+level}else if(m.y>H+30)money.splice(i,1)}}
 function loop(){update();draw();requestAnimationFrame(loop)}loop();
 var L=document.getElementById("left"),R=document.getElementById("right");function stop(){move=0}L.ontouchstart=function(){move=-4.5};R.ontouchstart=function(){move=4.5};L.ontouchend=stop;R.ontouchend=stop;L.onmousedown=function(){move=-4.5};R.onmousedown=function(){move=4.5};L.onmouseup=stop;R.onmouseup=stop;
 document.getElementById("start").onclick=function(){traffic=[];money=[];coins=0;level=1;document.getElementById("coins").textContent="0";document.getElementById("level").textContent="Level 1";car.x=W/2-22;playing=true;this.style.display="none"};
