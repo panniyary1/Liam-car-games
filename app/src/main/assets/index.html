@@ -36,6 +36,54 @@ canvas{width:100%;height:100%;display:block}
 #left{left:22px} #right{right:22px}
 #cheer{position:fixed;left:50%;top:20%;transform:translate(-50%,-50%);width:min(240px,52vw);padding:7px 10px;border:3px solid #fff;border-radius:14px;background:linear-gradient(135deg,#fff7a8,#ffd43b,#ffb44b);color:#6a4300;text-align:center;font-weight:900;font-size:clamp(14px,3vw,20px);box-shadow:0 6px 15px #0004;z-index:40;display:none}
 #cheer small{display:block;font-size:11px;margin-top:2px}
+
+#lives{
+position:fixed;
+top:10px;
+left:50%;
+transform:translateX(-50%);
+color:#fff;
+font-size:20px;
+font-weight:900;
+text-shadow:0 2px 4px #000;
+z-index:12
+}
+#crashMsg,#gameOver{
+position:fixed;
+left:50%;
+top:45%;
+transform:translate(-50%,-50%);
+z-index:50;
+display:none;
+text-align:center;
+font-weight:900;
+border:4px solid #fff;
+box-shadow:0 8px 22px #0005
+}
+#crashMsg{
+background:#ffb703;
+color:#5a3300;
+padding:12px 18px;
+border-radius:18px;
+font-size:clamp(18px,4vw,28px)
+}
+#gameOver{
+background:#ffffff;
+color:#222;
+padding:20px;
+border-radius:24px;
+width:min(340px,82vw)
+}
+#gameOver h2{margin:0 0 8px;font-size:30px}
+#restartBtn{
+border:0;
+border-radius:16px;
+padding:13px 20px;
+font-size:20px;
+background:#ffd43b;
+font-weight:900
+}
+
 </style>
 </head>
 <body>
@@ -82,6 +130,7 @@ canvas{width:100%;height:100%;display:block}
 <section id="game" class="screen">
   <canvas id="gameCanvas"></canvas>
   <div id="hud">🪙 <span id="coins">0</span> &nbsp; 🚗 <span id="passed">0</span></div>
+  <div id="lives">❤️❤️❤️</div>
   <button id="homeBtn">HOME</button>
   <button id="soundBtn">🔊</button>
   <button id="left" class="ctrl">◀</button>
@@ -89,6 +138,13 @@ canvas{width:100%;height:100%;display:block}
 </section>
 
 <div id="cheer">🎊 GREAT JOB! 🎊<small>Keep going!</small></div>
+<div id="crashMsg">💥 CRASH!<br><small>Be careful!</small></div>
+<div id="gameOver">
+  <h2>🏁 GAME OVER</h2>
+  <div>You used all 3 crashes.</div>
+  <p>Try again!</p>
+  <button id="restartBtn">🔄 PLAY AGAIN</button>
+</div>
 
 <script>
 (function(){
@@ -99,7 +155,7 @@ const screens = document.querySelectorAll('.screen');
 const canvas = $('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let W=0,H=0,playing=false,frame=0;
+let W=0,H=0,playing=false,frame=0,paused=false,lives=3,invincible=false;
 let selectedCar='🏎️', selectedDriver='🧒';
 let playerX=0, playerY=0, leftHeld=false, rightHeld=false;
 let coins=0, passed=0;
@@ -112,7 +168,13 @@ function show(id){
   screens.forEach(s=>s.classList.remove('show'));
   $(id).classList.add('show');
   playing = id==='game';
-  if(!playing) stopMusic();
+  if(!playing){
+    stopMusic();
+    paused=false;
+    invincible=false;
+    $('crashMsg').style.display='none';
+    $('gameOver').style.display='none';
+  }
 }
 
 function resize(){
@@ -131,9 +193,10 @@ function roadWidth(y){
 function roadLeft(y){ return W/2-roadWidth(y)/2; }
 
 function startGame(){
-  coins=0; passed=0; frame=0; traffic=[]; coinList=[];
+  coins=0; passed=0; frame=0; traffic=[]; coinList=[]; lives=3; paused=false; invincible=false;
   $('coins').textContent='0';
   $('passed').textContent='0';
+  updateLives();
   playerX=W/2; playerY=H-120;
   show('game');
   startMusic();
@@ -305,6 +368,63 @@ function drawTopCar(x,y,kind){
     ctx.fillRect(-3,-9,6,18); ctx.fillRect(-9,-3,18,6);
   }
   ctx.restore();
+}
+
+
+function updateLives(){
+  $('lives').textContent='❤️'.repeat(Math.max(0,lives))+'🖤'.repeat(Math.max(0,3-lives));
+}
+
+function crashSound(){
+  if(!soundOn) return;
+  ensureAudio();
+  // short arcade crash/noise-like burst
+  beep(180,.10,.06);
+  setTimeout(()=>beep(120,.14,.055),70);
+  setTimeout(()=>beep(80,.18,.05),145);
+}
+
+function checkTrafficCollision(x,y){
+  if(invincible || paused) return false;
+  const dx=Math.abs(x-playerX);
+  const dy=Math.abs(y-playerY);
+  return dx<38 && dy<62;
+}
+
+function handleCrash(){
+  if(invincible || paused) return;
+  lives--;
+  updateLives();
+  crashSound();
+
+  paused=true;
+  invincible=true;
+  stopMusic();
+
+  const msg=$('crashMsg');
+  msg.style.display='block';
+
+  setTimeout(()=>{
+    msg.style.display='none';
+
+    if(lives<=0){
+      playing=false;
+      paused=true;
+      $('gameOver').style.display='block';
+      return;
+    }
+
+    // Clear nearby traffic and restart from center.
+    traffic=[];
+    coinList=[];
+    playerX=W/2;
+    playerY=H-120;
+    paused=false;
+    startMusic();
+
+    // brief protection after restart
+    setTimeout(()=>{invincible=false;},1200);
+  },900);
 }
 
 function updateTraffic(){
@@ -502,7 +622,7 @@ function drawPlayer(){
 
 function loop(){
   requestAnimationFrame(loop);
-  if(!playing) return;
+  if(!playing || paused) return;
   frame++;
   drawBackground();
   drawRoad();
@@ -571,6 +691,7 @@ function stopMusic(){
   if(musicTimer){ clearInterval(musicTimer); musicTimer=null; }
 }
 
+$('restartBtn').addEventListener('click',()=>{ $('gameOver').style.display='none'; startGame(); });
 $('playHome').addEventListener('click',startGame);
 $('playGarage').addEventListener('click',startGame);
 $('garageHome').addEventListener('click',()=>show('garage'));
