@@ -28,6 +28,14 @@ canvas{width:100%;height:100%;display:block}
 .ctrl{position:fixed;bottom:22px;width:80px;height:80px;border-radius:50%;border:4px solid #fff;background:#1976d2cc;color:#fff;font-size:38px;z-index:6}
 #left{left:22px}#right{right:22px}
 #goHome{position:fixed;top:48px;right:12px;border:0;border-radius:12px;padding:9px 12px;z-index:6}
+
+#soundBtn{position:fixed;top:14px;left:14px;border:0;border-radius:14px;padding:10px 12px;font-size:20px;background:#ffffffdd;z-index:9}
+#cheer{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%) scale(.9);width:min(430px,86vw);padding:22px 18px;border-radius:26px;background:linear-gradient(135deg,#fff7b2,#ffd54f);color:#6a3b00;text-align:center;font-weight:900;font-size:clamp(24px,6vw,40px);box-shadow:0 12px 30px #0005;z-index:20;display:none;border:5px solid #fff}
+#cheer small{display:block;font-size:18px;margin-top:8px;color:#7b4b00}
+#garage .carCard{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:122px;height:120px;margin:8px;border:5px solid transparent;border-radius:24px;background:linear-gradient(#fff,#e8f5ff);box-shadow:0 6px 14px #0002;font-size:48px}
+#garage .carCard.sel{border-color:#ffd43b;transform:translateY(-3px)}
+#garage .carCard span{font-size:13px;margin-top:4px;color:#234}
+
 </style>
 </head>
 <body>
@@ -45,10 +53,10 @@ canvas{width:100%;height:100%;display:block}
   <button class="back" onclick="show('home')">←</button>
   <div class="panel">
     <h1>Choose Your Car</h1>
-    <div class="choice sel" data-car="sport" onclick="pickCar(this)">🏎️</div>
-    <div class="choice" data-car="suv" onclick="pickCar(this)">🚙</div>
-    <div class="choice" data-car="truck" onclick="pickCar(this)">🛻</div>
-    <div class="choice" data-car="police" onclick="pickCar(this)">🚓</div>
+    <div class="carCard sel" data-car="sport" onclick="pickCar(this)">🏎️<span>SPORT</span></div>
+    <div class="carCard" data-car="suv" onclick="pickCar(this)">🚙<span>SUV</span></div>
+    <div class="carCard" data-car="truck" onclick="pickCar(this)">🛻<span>TRUCK</span></div>
+    <div class="carCard" data-car="police" onclick="pickCar(this)">🚓<span>POLICE</span></div>
     <p>Tap a car, then PLAY!</p>
     <button class="big play" onclick="startGame()">▶ PLAY</button>
   </div>
@@ -66,9 +74,10 @@ canvas{width:100%;height:100%;display:block}
   </div>
 </section>
 
+<button id="soundBtn" onclick="toggleSound()">🔊</button><div id="cheer">🎊 CONGRATULATIONS! 🎊<small>You are doing great!</small></div>
 <section id="game" class="screen">
   <canvas id="c"></canvas>
-  <div id="hud">🪙 <span id="coins">0</span></div>
+  <div id="hud">🪙 <span id="coins">0</span> &nbsp; 🚗 <span id="passed">0</span></div>
   <div id="place">🌳 Countryside</div>
   <button id="goHome" onclick="show('home')">HOME</button>
   <button id="left" class="ctrl">◀</button>
@@ -76,16 +85,58 @@ canvas{width:100%;height:100%;display:block}
 </section>
 
 <script>
-var currentCar="sport",kid="🧒",coins=0,playing=false,move=0,tick=0,traffic=[],money=[];
+var currentCar="sport",kid="🧒",coins=0,passed=0,playing=false,move=0,tick=0,traffic=[],money=[],soundOn=true,audioCtx=null,musicTimer=null;
 var c=document.getElementById("c"),g=c.getContext("2d"),W,H,car={x:0,y:0,w:52,h:92};
 
 function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("show"));document.getElementById(id).classList.add("show");playing=id==="game"}
-function pickCar(el){document.querySelectorAll("#garage .choice").forEach(x=>x.classList.remove("sel"));el.classList.add("sel");currentCar=el.dataset.car}
+
+function beep(freq,dur,vol,delay){
+ if(!soundOn)return;
+ if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+ var o=audioCtx.createOscillator(),a=audioCtx.createGain();
+ o.type="triangle";o.frequency.value=freq;
+ a.gain.setValueAtTime(0.0001,audioCtx.currentTime+delay);
+ a.gain.exponentialRampToValueAtTime(vol,audioCtx.currentTime+delay+.02);
+ a.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+delay+dur);
+ o.connect(a);a.connect(audioCtx.destination);
+ o.start(audioCtx.currentTime+delay);o.stop(audioCtx.currentTime+delay+dur+.03);
+}
+function playMotif(){
+ if(!soundOn||!playing)return;
+ var notes=[392,494,587,659,587,494,440,523];
+ for(var i=0;i<notes.length;i++)beep(notes[i],.18,.035,i*.19);
+}
+function startMusic(){
+ if(musicTimer)clearInterval(musicTimer);
+ playMotif();
+ musicTimer=setInterval(playMotif,1900);
+}
+function toggleSound(){
+ soundOn=!soundOn;
+ document.getElementById("soundBtn").textContent=soundOn?"🔊":"🔇";
+ if(soundOn&&playing)startMusic();
+ if(!soundOn&&musicTimer){clearInterval(musicTimer);musicTimer=null}
+}
+function coinSound(){beep(880,.09,.08,0);beep(1175,.11,.06,.08)}
+function cheer(){
+ var el=document.getElementById("cheer");
+ el.style.display="block";
+ el.animate([{transform:"translate(-50%,-50%) scale(.8)",opacity:.2},{transform:"translate(-50%,-50%) scale(1.08)",opacity:1},{transform:"translate(-50%,-50%) scale(1)",opacity:1}],{duration:420});
+ beep(523,.16,.08,0);beep(659,.16,.08,.14);beep(784,.24,.09,.28);
+ setTimeout(function(){el.style.display="none"},1800);
+}
+
+function pickCar(el){document.querySelectorAll("#garage .carCard").forEach(x=>x.classList.remove("sel"));el.classList.add("sel");currentCar=el.dataset.car}
 function pickKid(el){document.querySelectorAll("#driver .choice").forEach(x=>x.classList.remove("sel"));el.classList.add("sel");kid=el.dataset.kid;document.getElementById("kid").textContent=kid}
 function size(){W=c.width=innerWidth;H=c.height=innerHeight;car.y=H-145;if(!playing)car.x=W/2-car.w/2}
 addEventListener("resize",size);size();
 
-function startGame(){coins=0;traffic=[];money=[];document.getElementById("coins").textContent=0;size();show("game")}
+function startGame(){
+coins=0;passed=0;traffic=[];money=[];
+document.getElementById("coins").textContent=0;
+document.getElementById("passed").textContent=0;
+size();show("game");startMusic();
+}
 
 function road(){var top=W*.18,bottom=W*.76;return{top:top,bottom:bottom,cx:W/2}}
 function roadX(y){var r=road(),t=y/H,w=r.top+(r.bottom-r.top)*t;return{x:W/2-w/2,w:w}}
@@ -110,6 +161,14 @@ function draw(){
  // hills
  g.fillStyle="#5ba74b";g.beginPath();g.moveTo(0,H*.28);g.quadraticCurveTo(W*.2,H*.16,W*.4,H*.28);g.quadraticCurveTo(W*.65,H*.13,W,H*.28);g.lineTo(W,H*.36);g.lineTo(0,H*.36);g.fill();
 
+// clouds
+g.fillStyle="#ffffffcc";
+for(var cl=0;cl<3;cl++){
+ var cx=(cl*.36*W+55+(tick*.08))%(W+120)-60,cy=55+cl*42;
+ g.beginPath();g.arc(cx,cy,18,0,7);g.arc(cx+18,cy-6,23,0,7);g.arc(cx+40,cy,16,0,7);g.fill();
+}
+
+
  // perspective road
  var r=road();g.fillStyle="#888";g.beginPath();g.moveTo(W/2-r.top/2,0);g.lineTo(W/2+r.top/2,0);g.lineTo(W/2+r.bottom/2,H);g.lineTo(W/2-r.bottom/2,H);g.fill();
  g.fillStyle="#383838";g.beginPath();g.moveTo(W/2-r.top/2+7,0);g.lineTo(W/2+r.top/2-7,0);g.lineTo(W/2+r.bottom/2-12,H);g.lineTo(W/2-r.bottom/2+12,H);g.fill();
@@ -121,7 +180,15 @@ function draw(){
  var sy=(tick*.45)%180;
  for(var q=-1;q<7;q++){var y=q*180+sy,s=.55+.65*(y/H);tree(28,y,s);tree(W-28,y+30,s);if(q%3===0){house(W-78,y+60,s*.8);animal(72,y+95,"🐄",s)}else if(q%3===1){animal(W-76,y+90,"🐎",s);animal(70,y+120,"🐑",s)}else{animal(W-74,y+100,"🐕",s)}}
 
- // coins
+ 
+// flowers and kid-friendly road signs
+for(var f=0;f<7;f++){
+ var fy=(f*125+tick*.55)%H;
+ g.fillStyle=f%2?"#ff5aa5":"#ffd84d";
+ g.beginPath();g.arc(18+(f%2)*(W-36),fy,5,0,7);g.fill();
+}
+
+// coins
  money.forEach(function(m){var t=m.y/H,rad=12+9*t;var cg=g.createRadialGradient(m.x-5,m.y-6,2,m.x,m.y,rad);cg.addColorStop(0,"#fffbd0");cg.addColorStop(.35,"#ffe23b");cg.addColorStop(1,"#e99a00");g.beginPath();g.arc(m.x,m.y,rad,0,7);g.fillStyle=cg;g.fill();g.strokeStyle="#b66c00";g.lineWidth=3;g.stroke();g.fillStyle="#704500";g.font="bold "+Math.round(rad)+"px Arial";g.textAlign="center";g.textBaseline="middle";g.fillText("$",m.x,m.y+1)});
 
  traffic.forEach(function(o){car3d(o.x,o.y,o.col,o.s)});
@@ -134,8 +201,16 @@ function update(){
  var rb=roadX(car.y),min=rb.x+12,max=rb.x+rb.w-car.w-12;car.x+=move;if(car.x<min)car.x=min;if(car.x>max)car.x=max;
  if(Math.random()<.012){var y=-100,rr=roadX(20),cols=["#1565c0","#f6b800","#7b1fa2","#00897b","#e53935"];traffic.push({x:rr.x+Math.random()*Math.max(10,rr.w-55),y:y,col:cols[Math.floor(Math.random()*cols.length)],s:.62})}
  if(Math.random()<.012){var rr2=roadX(40);money.push({x:rr2.x+20+Math.random()*Math.max(10,rr2.w-40),y:-30})}
- for(var i=traffic.length-1;i>=0;i--){var o=traffic[i];o.y+=3.2;o.s=.55+.5*(o.y/H);if(o.y>H+120)traffic.splice(i,1);else if(car.x<o.x+52*o.s&&car.x+52>o.x&&car.y<o.y+92*o.s&&car.y+92>o.y){traffic.splice(i,1)}}
- for(i=money.length-1;i>=0;i--){var m=money[i];m.y+=3;if(car.x<m.x+24&&car.x+52>m.x-24&&car.y<m.y+24&&car.y+92>m.y-24){coins++;document.getElementById("coins").textContent=coins;money.splice(i,1)}else if(m.y>H+30)money.splice(i,1)}
+ for(var i=traffic.length-1;i>=0;i--){
+ var o=traffic[i];o.y+=3.2;o.s=.55+.5*(o.y/H);
+ if(o.y>H+120){
+   traffic.splice(i,1);passed++;document.getElementById("passed").textContent=passed;
+   if(passed%15===0)cheer();
+ }else if(car.x<o.x+52*o.s&&car.x+52>o.x&&car.y<o.y+92*o.s&&car.y+92>o.y){
+   traffic.splice(i,1);
+ }
+}
+ for(i=money.length-1;i>=0;i--){var m=money[i];m.y+=3;if(car.x<m.x+24&&car.x+52>m.x-24&&car.y<m.y+24&&car.y+92>m.y-24){coins++;document.getElementById("coins").textContent=coins;coinSound();money.splice(i,1)}else if(m.y>H+30)money.splice(i,1)}
 }
 function loop(){update();draw();requestAnimationFrame(loop)}loop();
 
