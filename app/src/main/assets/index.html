@@ -1,3 +1,4 @@
+
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Liam Car Games</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;font-family:Arial,sans-serif;touch-action:none}canvas{display:block;width:100%;height:100%}#title{position:fixed;top:10px;width:100%;text-align:center;color:#ffd600;font-size:22px;font-weight:bold;z-index:3}#hud{position:fixed;top:42px;left:14px;color:white;font-size:18px;font-weight:bold;z-index:3}#level{position:fixed;top:42px;right:14px;color:white;font-size:18px;font-weight:bold;z-index:3}.btn{position:fixed;bottom:22px;width:78px;height:78px;border-radius:50%;border:3px solid white;background:#555;color:white;font-size:36px;z-index:4}#left{left:22px}#right{right:22px}#start{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);border:0;border-radius:16px;padding:17px 28px;background:#ffd600;font-size:22px;font-weight:bold;z-index:5}</style></head><body><div id="title">LIAM CAR GAMES</div><div id="hud">Coins: <span id="coins">0</span></div><div id="level">Level 1</div><canvas id="game"></canvas><button id="left" class="btn">&#9664;</button><button id="right" class="btn">&#9654;</button><button id="start">START RACE</button><script>
 var c=document.getElementById("game"),g=c.getContext("2d"),W,H,playing=false,move=0,coins=0,level=1,tick=0,traffic=[],money=[],car={x:0,y:0,w:44,h:76};
 function size(){W=c.width=innerWidth;H=c.height=innerHeight;car.y=H-130;if(!playing)car.x=W/2-22}addEventListener("resize",size);size();
@@ -73,21 +74,80 @@ g.fillRect(38,18,3,35);
 
 g.restore()
 }
-function draw(){var r=road();g.fillStyle="#2e9b3f";g.fillRect(0,0,W,H);
-var sy=(tick*.45)%150;
+function draw(){var r=road();// sky/grass depth
+var grassGrad=g.createLinearGradient(0,0,0,H);
+grassGrad.addColorStop(0,"#4fc35a");
+grassGrad.addColorStop(1,"#1f7f35");
+g.fillStyle=grassGrad;g.fillRect(0,0,W,H);
+
+// distant hills
+g.fillStyle="#6aa84f";
+g.beginPath();g.moveTo(0,H*.18);g.quadraticCurveTo(W*.15,H*.08,W*.3,H*.18);g.quadraticCurveTo(W*.45,H*.05,W*.62,H*.18);g.quadraticCurveTo(W*.8,H*.09,W,H*.18);g.lineTo(W,H*.28);g.lineTo(0,H*.28);g.closePath();g.fill();
+g.fillStyle="#5b8f45";
+g.beginPath();g.moveTo(0,H*.23);g.quadraticCurveTo(W*.18,H*.14,W*.34,H*.23);g.quadraticCurveTo(W*.52,H*.12,W*.7,H*.23);g.quadraticCurveTo(W*.86,H*.15,W,H*.23);g.lineTo(W,H*.31);g.lineTo(0,H*.31);g.closePath();g.fill();
+
+// moving scenery
+var sy=(tick*.40)%170;
 for(var q=-1;q<7;q++){
- var yy=q*150+sy;
- g.fillStyle="#6d4c41";g.fillRect(18,yy+28,8,30);g.fillRect(W-26,yy+28,8,30);
- g.fillStyle="#1b5e20";g.beginPath();g.arc(22,yy+20,20,0,7);g.fill();g.beginPath();g.arc(W-22,yy+20,20,0,7);g.fill();
- if(q%2===0){
-g.fillStyle="#fff";g.fillRect(52,yy+65,24,15);g.fillStyle="#222";g.fillRect(57,yy+78,5,7);g.fillRect(68,yy+78,5,7);g.fillStyle="#111";g.fillRect(72,yy+67,7,6);
-g.fillStyle="#f5d7a1";g.fillRect(W-105,yy+72,44,28);g.fillStyle="#b5651d";g.beginPath();g.moveTo(W-110,yy+72);g.lineTo(W-83,yy+52);g.lineTo(W-56,yy+72);g.fill();g.fillStyle="#7ec8ff";g.fillRect(W-96,yy+80,10,10);g.fillRect(W-78,yy+80,10,10);
-}else{
-g.fillStyle="#8d6e63";g.beginPath();g.arc(65,yy+80,12,0,Math.PI*2);g.fill();
-g.fillStyle="#fff";g.fillRect(W-90,yy+72,28,17);g.fillStyle="#111";g.fillRect(W-84,yy+86,5,8);g.fillRect(W-69,yy+86,5,8);g.fillStyle="#111";g.fillRect(W-65,yy+74,9,7);
+  var yy=q*170+sy;
+
+  // trees left
+  g.fillStyle="#6b4f2a";g.fillRect(22,yy+35,9,38);
+  g.fillStyle="#1d6f2b";g.beginPath();g.arc(26,yy+24,24,0,Math.PI*2);g.fill();
+  g.fillStyle="#2f8f3b";g.beginPath();g.arc(15,yy+18,13,0,Math.PI*2);g.fill();
+
+  // trees right
+  g.fillStyle="#6b4f2a";g.fillRect(W-31,yy+35,9,38);
+  g.fillStyle="#1d6f2b";g.beginPath();g.arc(W-26,yy+24,24,0,Math.PI*2);g.fill();
+  g.fillStyle="#3aa44c";g.beginPath();g.arc(W-37,yy+18,13,0,Math.PI*2);g.fill();
+
+  if(q%3===0){
+    // farmhouse
+    g.fillStyle="#f1d7a8";g.fillRect(W-120,yy+76,55,36);
+    g.fillStyle="#a85d24";g.beginPath();g.moveTo(W-126,yy+76);g.lineTo(W-92,yy+50);g.lineTo(W-59,yy+76);g.fill();
+    g.fillStyle="#76c3ef";g.fillRect(W-108,yy+85,13,12);g.fillRect(W-84,yy+85,13,12);
+    g.fillStyle="#7d4a24";g.fillRect(W-93,yy+90,10,22);
+
+    // cow
+    g.fillStyle="#f5f5f5";g.fillRect(52,yy+83,34,20);
+    g.fillStyle="#222";g.fillRect(58,yy+98,6,12);g.fillRect(77,yy+98,6,12);
+    g.fillStyle="#111";g.fillRect(78,yy+87,12,9);
+    g.fillStyle="#111";g.fillRect(58,yy+86,7,6);
+    g.fillRect(71,yy+91,6,7);
+  } else if(q%3===1){
+    // horse
+    g.fillStyle="#9b5f34";g.fillRect(48,yy+84,37,18);
+    g.fillRect(54,yy+100,5,13);g.fillRect(76,yy+100,5,13);
+    g.fillStyle="#70421f";g.fillRect(79,yy+77,11,16);
+    g.fillStyle="#111";g.fillRect(86,yy+80,3,3);
+
+    // rocks and bush right
+    g.fillStyle="#777";g.beginPath();g.arc(W-78,yy+93,13,0,Math.PI*2);g.fill();
+    g.fillStyle="#2d7f38";g.beginPath();g.arc(W-100,yy+88,18,0,Math.PI*2);g.fill();
+  } else {
+    // barn
+    g.fillStyle="#b94335";g.fillRect(44,yy+72,53,40);
+    g.fillStyle="#7f2d26";g.beginPath();g.moveTo(38,yy+72);g.lineTo(70,yy+48);g.lineTo(103,yy+72);g.fill();
+    g.fillStyle="#fff";g.fillRect(62,yy+84,18,28);
+
+    // sheep
+    g.fillStyle="#fff";g.beginPath();g.arc(W-82,yy+91,13,0,Math.PI*2);g.fill();
+    g.beginPath();g.arc(W-94,yy+90,11,0,Math.PI*2);g.fill();
+    g.fillStyle="#222";g.fillRect(W-72,yy+89,10,8);
+    g.fillRect(W-93,yy+101,4,10);g.fillRect(W-79,yy+101,4,10);
+  }
 }
-}
-g.fillStyle="#777";g.fillRect(r.x-12,0,12,H);g.fillRect(r.x+r.w,0,12,H);g.fillStyle="#3a3a3a";g.fillRect(r.x,0,r.w,H);g.fillStyle="white";g.fillRect(r.x,0,5,H);g.fillRect(r.x+r.w-5,0,5,H);for(var y=tick%70-70;y<H;y+=70)g.fillRect(W/2-3,y,6,35);for(var i=0;i<money.length;i++){var m=money[i];g.beginPath();g.arc(m.x,m.y,18,0,Math.PI*2);g.fillStyle="#ffd700";g.fill();g.lineWidth=4;g.strokeStyle="#ff9800";g.stroke();g.beginPath();g.arc(m.x-6,m.y-6,5,0,Math.PI*2);g.fillStyle="#fff59d";g.fill();g.fillStyle="#7a4b00";g.font="bold 18px Arial";g.textAlign="center";g.textBaseline="middle";g.fillText("$",m.x,m.y+1)}for(i=0;i<traffic.length;i++)dc(traffic[i].x,traffic[i].y,"#e53935");dc(car.x,car.y,coins>=20?"#ffd600":coins>=10?"#2196f3":"#e53935")}
+
+// road shoulders and asphalt
+g.fillStyle="#9b9b9b";g.fillRect(r.x-13,0,13,H);g.fillRect(r.x+r.w,0,13,H);
+var roadGrad=g.createLinearGradient(r.x,0,r.x+r.w,0);
+roadGrad.addColorStop(0,"#2f2f2f");
+roadGrad.addColorStop(.5,"#444");
+roadGrad.addColorStop(1,"#2f2f2f");
+g.fillStyle=roadGrad;g.fillRect(r.x,0,r.w,H);
+
+// road edge lines
+g.fillStyle="#f7f7f7";g.fillRect(r.x+5,0,4,H);g.fillRect(r.x+r.w-9,0,4,H);g.fillStyle="white";g.fillRect(r.x,0,5,H);g.fillRect(r.x+r.w-5,0,5,H);for(var y=tick%70-70;y<H;y+=70)g.fillRect(W/2-3,y,6,35);for(var i=0;i<money.length;i++){var m=money[i];var cg=g.createRadialGradient(m.x-6,m.y-7,3,m.x,m.y,20);cg.addColorStop(0,"#fff8a6");cg.addColorStop(.35,"#ffd740");cg.addColorStop(1,"#f6a700");g.beginPath();g.arc(m.x,m.y,20,0,Math.PI*2);g.fillStyle=cg;g.fill();g.lineWidth=4;g.strokeStyle="#c67c00";g.stroke();g.beginPath();g.arc(m.x-6,m.y-6,5,0,Math.PI*2);g.fillStyle="#fff59d";g.fill();g.fillStyle="#7a4b00";g.font="bold 18px Arial";g.textAlign="center";g.textBaseline="middle";g.fillText("$",m.x,m.y+1)}for(i=0;i<traffic.length;i++)dc(traffic[i].x,traffic[i].y,"#e53935");dc(car.x,car.y,coins>=20?"#ffd600":coins>=10?"#2196f3":"#e53935")}
 function hit(o){return car.x<o.x+44&&car.x+44>o.x&&car.y<o.y+76&&car.y+76>o.y}
 function over(){playing=false;move=0;var s=document.getElementById("start");s.style.display="block";s.textContent="TRY AGAIN"}
 function update(){if(!playing)return;var r=road(),sp=2.8+level*.18;tick+=sp;car.x+=move;if(car.x<r.x+8)car.x=r.x+8;if(car.x>r.x+r.w-52)car.x=r.x+r.w-52;if(Math.random()<.018+.002*level)traffic.push({x:r.x+18+Math.random()*(r.w-80),y:-90});if(Math.random()<.014)money.push({x:r.x+28+Math.random()*(r.w-56),y:-25});for(var i=traffic.length-1;i>=0;i--){traffic[i].y+=sp;if(hit(traffic[i])){over();return}if(traffic[i].y>H+100)traffic.splice(i,1)}for(i=money.length-1;i>=0;i--){var m=money[i];m.y+=sp;if(car.x<m.x+20&&car.x+44>m.x-20&&car.y<m.y+20&&car.y+76>m.y-20){coins++;money.splice(i,1);document.getElementById("coins").textContent=coins;level=1+Math.floor(coins/8);document.getElementById("level").textContent="Level "+level}else if(m.y>H+30)money.splice(i,1)}}
