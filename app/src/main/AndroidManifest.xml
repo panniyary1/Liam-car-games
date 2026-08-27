@@ -4,7 +4,7 @@
 
     <application
         android:label="Liam Car Games"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/file_00000000ffe8822fa5c44b461e8ae674"
         android:allowBackup="true"
         android:supportsRtl="true">
 
