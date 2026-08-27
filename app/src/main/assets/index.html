@@ -45,6 +45,20 @@ button{font-family:inherit;font-weight:900}
 #gameOver h2{margin:0 0 7px;font-size:30px}
 #restartBtn{border:0;border-radius:16px;padding:13px 20px;font-size:20px;background:#ffd43b;font-weight:900}
 @media(min-width:650px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+#startLights{
+position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+z-index:60;pointer-events:none;background:rgba(0,0,0,.10)
+}
+#lightBox{
+background:#171717;border:5px solid #fff;border-radius:24px;padding:14px 20px;
+box-shadow:0 10px 28px #0007;text-align:center
+}
+#lightTitle{color:#fff;font-size:18px;font-weight:900;margin-bottom:8px;letter-spacing:1px}
+.lightRow{display:flex;gap:10px;justify-content:center}
+.raceLight{width:38px;height:38px;border-radius:50%;background:#3c3c3c;border:3px solid #080808;box-shadow:inset 0 0 8px #000}
+#goText{color:#fff;font-weight:900;font-size:28px;margin-top:7px;min-height:32px}
+
 </style>
 </head>
 <body>
@@ -88,6 +102,19 @@ button{font-family:inherit;font-weight:900}
   <button id="left" class="ctrl">◀</button>
   <button id="right" class="ctrl">▶</button>
 </section>
+
+
+<div id="startLights">
+  <div id="lightBox">
+    <div id="lightTitle">🏁 LIAM CAR GAMES 🏁</div>
+    <div class="lightRow">
+      <div class="raceLight" id="lightRed"></div>
+      <div class="raceLight" id="lightYellow"></div>
+      <div class="raceLight" id="lightGreen"></div>
+    </div>
+    <div id="goText"></div>
+  </div>
+</div>
 
 <div id="cheer">🎊 GREAT JOB! 🎊<small>Keep going!</small></div>
 <div id="crashMsg">💥 CRASH!<small>Be careful!</small></div>
@@ -134,6 +161,7 @@ function show(id){
   if(!playing){
     stopMusic(); paused=false; invincible=false;
     $('crashMsg').style.display='none'; $('gameOver').style.display='none';
+    $('startLights').style.display='none';
   }
 }
 function resize(){
@@ -234,11 +262,41 @@ function buildGarage(){
 }
 buildGarage();
 
+function runStartLights(){
+  paused=true;
+  stopMusic();
+  const box=$('startLights'),red=$('lightRed'),yellow=$('lightYellow'),green=$('lightGreen'),txt=$('goText');
+  box.style.display='flex';
+  red.style.background='#3c3c3c';yellow.style.background='#3c3c3c';green.style.background='#3c3c3c';txt.textContent='';
+  red.style.background='#ff2d2d';
+  tone(330,.10,.035,'square');
+
+  setTimeout(()=>{
+    if(!playing)return;
+    yellow.style.background='#ffd43b';
+    tone(440,.10,.035,'square');
+  },650);
+
+  setTimeout(()=>{
+    if(!playing)return;
+    green.style.background='#29d34a';
+    txt.textContent='GO!';
+    tone(660,.12,.045,'triangle');
+  },1300);
+
+  setTimeout(()=>{
+    if(!playing)return;
+    box.style.display='none';
+    paused=false;
+    startMusic();
+  },1900);
+}
+
 function startGame(){
   coins=0;passed=0;lives=3;frame=0;traffic=[];coinList=[];particles=[];
   paused=false;invincible=false;playerX=W/2;playerY=H-120;
   $('coins').textContent='0';$('passed').textContent='0';updateLives();
-  $('gameOver').style.display='none';show('game');startMusic();
+  $('gameOver').style.display='none';show('game');runStartLights();
 }
 function updateLives(){
   $('lives').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives);
@@ -276,22 +334,78 @@ function drawRoad(){
     const seg=55+(y/H)*25;ctx.beginPath();ctx.moveTo(W/2,y);ctx.lineTo(W/2,y+seg);ctx.stroke();
   }
 }
+function drawTireStack(x,y,sc){
+  ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);
+  const colors=['#111','#e53935','#f5f5f5','#111'];
+  for(let i=0;i<4;i++){
+    ctx.fillStyle=colors[i];
+    ctx.beginPath();ctx.ellipse((i-1.5)*13,0,12,8,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#303030';
+    ctx.beginPath();ctx.ellipse((i-1.5)*13,0,5,3,0,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawRaceArch(y){
+  if(y<-120||y>H+120)return;
+  const l=roadLeft(y),rw=roadWidth(y);
+  const sc=.48+(y/H)*.70;
+  const top=y-56*sc;
+  ctx.save();
+  ctx.lineWidth=Math.max(5,10*sc);
+  ctx.strokeStyle='#1f2937';
+  ctx.beginPath();ctx.moveTo(l-18,y+20*sc);ctx.lineTo(l-18,top);ctx.lineTo(l+rw+18,top);ctx.lineTo(l+rw+18,y+20*sc);ctx.stroke();
+  ctx.fillStyle='#ffd43b';
+  ctx.fillRect(l-12,top-18*sc,rw+24,34*sc);
+  ctx.fillStyle='#111827';
+  ctx.font=`900 ${Math.max(10,18*sc)}px Arial`;
+  ctx.textAlign='center';
+  ctx.fillText('🏁 LIAM CAR GAMES 🏁',W/2,top+5*sc);
+  ctx.restore();
+}
+
 function drawScenery(){
-  for(let i=0;i<11;i++){
-    const y=((frame*2+i*120)%(H+160))-80,left=roadLeft(y),rw=roadWidth(y),side=i%2?-1:1;
-    const x=side<0?left-60-(i%3)*25:left+rw+60+(i%3)*25,sc=.55+(y/H)*.72;
-    ctx.font=(42*sc)+'px Arial';ctx.textAlign='center';ctx.fillText(i%4===0?'🌴':'🌳',x,y);
+  for(let i=0;i<15;i++){
+    const y=((frame*2.2+i*78)%(H+130))-65;
+    const l=roadLeft(y),rw=roadWidth(y),sc=.42+(y/H)*.55;
+    drawTireStack(l-25,y,sc);
+    drawTireStack(l+rw+25,y,sc);
   }
-  for(let i=0;i<8;i++){
-    const y=((frame*1.55+i*185)%(H+190))-95,left=roadLeft(y),rw=roadWidth(y),side=i%2?-1:1;
-    const x=side<0?left-110:left+rw+110,sc=.52+(y/H)*.60;
-    ctx.font=(31*sc)+'px Arial';ctx.fillText(animals[i%animals.length],x,y);
+
+  const fans=['🧑','👩','👨','👧','👦','🙋','🙋‍♀️','🙋‍♂️'];
+  for(let i=0;i<10;i++){
+    const y=((frame*1.65+i*145)%(H+180))-90;
+    const l=roadLeft(y),rw=roadWidth(y),side=i%2?-1:1;
+    const x=side<0?l-82:l+rw+82;
+    const sc=.50+(y/H)*.62;
+    ctx.font=(30*sc)+'px Arial';ctx.textAlign='center';
+    ctx.fillText(fans[i%fans.length],x,y);
+    if(i%3===0){
+      ctx.font=(22*sc)+'px Arial';
+      ctx.fillText(i%2?'🚩':'🏁',x+(side<0?-22:22)*sc,y-12*sc);
+    }
   }
-  for(let i=0;i<12;i++){
-    const y=((frame*1.35+i*100)%(H+120))-60,left=roadLeft(y),rw=roadWidth(y),side=i%2?-1:1;
-    const x=side<0?left-32-(i%3)*20:left+rw+32+(i%3)*20;
-    ctx.font='16px Arial';ctx.fillText(i%3?'🌼':'🌸',x,y);
+
+  for(let i=0;i<9;i++){
+    const y=((frame*1.55+i*150)%(H+180))-90,l=roadLeft(y),rw=roadWidth(y),side=i%2?-1:1;
+    const x=side<0?l-145-(i%2)*28:l+rw+145+(i%2)*28,sc=.48+(y/H)*.65;
+    ctx.font=(40*sc)+'px Arial';ctx.textAlign='center';ctx.fillText(i%4===0?'🌴':'🌳',x,y);
   }
+
+  for(let i=0;i<5;i++){
+    const y=((frame*1.25+i*245)%(H+220))-110,l=roadLeft(y),rw=roadWidth(y),side=i%2?-1:1;
+    const x=side<0?l-205:l+rw+205,sc=.46+(y/H)*.55;
+    ctx.font=(28*sc)+'px Arial';ctx.fillText(animals[i%animals.length],x,y);
+  }
+
+  for(let i=0;i<10;i++){
+    const y=((frame*1.20+i*115)%(H+120))-60,l=roadLeft(y),rw=roadWidth(y),side=i%2?-1:1;
+    const x=side<0?l-120-(i%3)*18:l+rw+120+(i%3)*18;
+    ctx.font='15px Arial';ctx.fillText(i%3?'🌼':'🌸',x,y);
+  }
+
+  const archY=((frame*1.75+180)%(H+1500))-250;
+  drawRaceArch(archY);
 }
 
 function spawnTraffic(){
